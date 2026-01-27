@@ -1,0 +1,243 @@
+import { useRouter, useLocalSearchParams } from 'expo-router'
+import { useState, useEffect } from 'react'
+import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+
+export default function RegisterStep1() {
+  const router = useRouter()
+  const params = useLocalSearchParams()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  // Check for error passed from step3
+  useEffect(() => {
+    if (params.error) {
+      setError(String(params.error))
+      // Pre-fill email if provided
+      if (params.email) {
+        setEmail(String(params.email))
+      }
+    }
+  }, [params.error, params.email])
+
+  const handleNext = () => {
+    // Clear previous errors
+    setError(null)
+
+    if (!email || !password || !confirmPassword) {
+      setError('All fields are required')
+      return
+    }
+
+    // STRICT email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+    if (!emailRegex.test(email.trim())) {
+      setError('Please enter a valid email address')
+      return
+    }
+
+    // Comprehensive password validation
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters')
+      return
+    }
+
+    if (password.length > 72) {
+      setError('Password must be less than 72 characters')
+      return
+    }
+
+    // Check for common weak passwords
+    const weakPasswords = ['password', '123456', 'qwerty', 'abc123']
+    if (weakPasswords.includes(password.toLowerCase())) {
+      setError('Password is too weak. Please choose a stronger password')
+      return
+    }
+
+    // Check if password contains at least one letter and one number (recommended)
+    const hasLetter = /[a-zA-Z]/.test(password)
+    const hasNumber = /[0-9]/.test(password)
+    
+    if (!hasLetter || !hasNumber) {
+      setError('Password should contain both letters and numbers')
+      return
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match')
+      return
+    }
+
+    // All validations passed
+    router.push({
+      pathname: '/(auth)/register/step2',
+      params: {
+        email: email.trim().toLowerCase(),
+        password,
+      },
+    })
+  }
+
+  return (
+    <ScrollView contentContainerStyle={styles.container}>
+      <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
+        <Text style={styles.backIcon}>←</Text>
+      </TouchableOpacity>
+
+      <View style={styles.logoContainer}>
+        <Image 
+          source={require('../../../assets/logo-orange.png')} 
+          style={styles.logoImage}
+          resizeMode="contain"
+        />
+      </View>
+      <Text style={styles.title}>Register</Text>
+      <Text style={styles.subtitle}>Register so you can explore our app.</Text>
+
+      <TextInput
+        placeholder="Email"
+        placeholderTextColor="#999"
+        autoCapitalize="none"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+        style={styles.input}
+      />
+
+      <TextInput
+        placeholder="Password"
+        placeholderTextColor="#999"
+        secureTextEntry
+        value={password}
+        onChangeText={(text) => {
+          setPassword(text)
+          setError(null) // Clear error when user types
+        }}
+        style={styles.input}
+      />
+      {password.length > 0 && password.length < 6 && (
+        <Text style={styles.helperText}>Password must be at least 6 characters</Text>
+      )}
+
+      <TextInput
+        placeholder="Confirm Password"
+        placeholderTextColor="#999"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={(text) => {
+          setConfirmPassword(text)
+          setError(null) // Clear error when user types
+        }}
+        style={styles.input}
+      />
+      {confirmPassword.length > 0 && password !== confirmPassword && (
+        <Text style={styles.helperText}>Passwords do not match</Text>
+      )}
+
+      {error && <Text style={styles.error}>{error}</Text>}
+
+      <TouchableOpacity style={styles.button} onPress={handleNext}>
+        <Text style={styles.buttonText}>Next</Text>
+      </TouchableOpacity>
+
+      <View style={styles.footer}>
+        <Text style={styles.footerText}>Already have an account? </Text>
+        <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+          <Text style={styles.footerLink}>Login</Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
+  )
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    padding: 24,
+    backgroundColor: '#fff',
+    paddingTop: 60,
+  },
+  backButton: {
+    marginBottom: 20,
+  },
+  backIcon: {
+    fontSize: 24,
+    color: '#000',
+  },
+  logoContainer: {
+    alignItems: 'center',
+    marginBottom: 32,
+  },
+  logoImage: {
+    width: 200,
+    height: 240,
+    marginBottom: 16,
+  },
+  logoText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    color: '#000',
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+    marginBottom: 32,
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  button: {
+    backgroundColor: '#FF6B2C',
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    marginBottom: 8,
+    fontSize: 14,
+  },
+  helperText: {
+    color: '#FF6B2C',
+    fontSize: 12,
+    marginTop: -12,
+    marginBottom: 8,
+    marginLeft: 4,
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    marginTop: 24,
+  },
+  footerText: {
+    color: '#666',
+    fontSize: 14,
+  },
+  footerLink: {
+    color: '#FF6B2C',
+    fontSize: 14,
+    fontWeight: '600',
+  },
+})
