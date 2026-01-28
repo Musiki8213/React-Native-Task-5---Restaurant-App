@@ -1,5 +1,5 @@
 import TabBar from '@/components/TabBar'
-import { foodItems } from '@/data/foodItems'
+import { useFoodItems } from '@/hooks/useFoodItems'
 import { supabase } from '@/lib/supabase'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -11,13 +11,15 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from 'react-native'
 
 export default function HomeScreen() {
   const router = useRouter()
   const [userName, setUserName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const [filteredItems, setFilteredItems] = useState(foodItems.slice(0, 3))
+  const { foodItems, loading: itemsLoading } = useFoodItems()
+  const [filteredItems, setFilteredItems] = useState<any[]>([])
 
   useEffect(() => {
     const loadUserName = async () => {
@@ -31,6 +33,11 @@ export default function HomeScreen() {
             .single()
             
           if (error) {
+            // PGRST116 means no rows found - profile doesn't exist yet
+            if (error.code === 'PGRST116') {
+              console.log('Profile not found yet, user may need to complete registration')
+              return
+            }
             console.error('Error loading user name:', error)
             return
           }
@@ -58,7 +65,7 @@ export default function HomeScreen() {
     } else {
       setFilteredItems(foodItems.slice(0, 3))
     }
-  }, [searchQuery])
+  }, [searchQuery, foodItems])
 
   const getGreeting = () => {
     const hour = new Date().getHours()
@@ -131,7 +138,7 @@ export default function HomeScreen() {
               key={cat.title}
               style={styles.categoryCard}
               activeOpacity={0.8}
-              onPress={() => router.push({ pathname: '/category/[category]', params: { category: cat.category } })}
+              onPress={() => router.push({ pathname: '/category/[category]' as any, params: { category: cat.category } })}
             >
               <Image source={cat.image} style={styles.categoryImage} />
               <Text style={styles.categoryText}>{cat.title}</Text>
@@ -140,23 +147,40 @@ export default function HomeScreen() {
         </ScrollView>
 
         {/* Featured Dishes */}
-        {filteredItems.map((item) => (
-          <TouchableOpacity
-            key={item.id}
-            style={styles.dishCard}
-            onPress={() => router.push(`/item?id=${item.id}`)}
-          >
-            <Image source={item.image} style={styles.dishImage} />
-            <View style={styles.dishInfo}>
-              <Text style={styles.dishName}>{item.name}</Text>
-              <Text style={styles.dishDesc}>{item.description}</Text>
-              <View style={styles.dishFooter}>
-                <Text style={styles.price}>R{item.price.toFixed(2)}</Text>
-                <Text style={styles.rating}>{renderStars(item.rating)}</Text>
+        {itemsLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#FF6B2C" />
+            <Text style={styles.loadingText}>Loading menu...</Text>
+          </View>
+        ) : filteredItems.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No items found</Text>
+          </View>
+        ) : (
+          filteredItems.map((item) => (
+            <TouchableOpacity
+              key={item.id}
+              style={styles.dishCard}
+              onPress={() => router.push(`/item?id=${item.id}` as any)}
+            >
+              {item.image_url ? (
+                <Image source={{ uri: item.image_url }} style={styles.dishImage} />
+              ) : (
+                <View style={[styles.dishImage, styles.placeholderImage]}>
+                  <Text style={styles.placeholderText}>No Image</Text>
+                </View>
+              )}
+              <View style={styles.dishInfo}>
+                <Text style={styles.dishName}>{item.name}</Text>
+                <Text style={styles.dishDesc}>{item.description}</Text>
+                <View style={styles.dishFooter}>
+                  <Text style={styles.price}>R{item.price.toFixed(2)}</Text>
+                  <Text style={styles.rating}>{renderStars(item.rating || 5)}</Text>
+                </View>
               </View>
-            </View>
-          </TouchableOpacity>
-        ))}
+            </TouchableOpacity>
+          ))
+        )}
       </ScrollView>
       <TabBar />
     </View>
@@ -261,6 +285,33 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   rating: {
+    fontSize: 12,
+  },
+  loadingContainer: {
+    padding: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#666',
+    fontSize: 14,
+  },
+  emptyContainer: {
+    padding: 40,
+    alignItems: 'center',
+  },
+  emptyText: {
+    color: '#666',
+    fontSize: 16,
+  },
+  placeholderImage: {
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: '#999',
     fontSize: 12,
   },
 })

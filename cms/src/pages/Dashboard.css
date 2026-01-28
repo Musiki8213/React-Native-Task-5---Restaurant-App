@@ -1,0 +1,88 @@
+.dashboard-container {
+  min-height: 100vh;
+  background: #ffffff;
+}
+
+.dashboard-header {
+  background: #ffffff;
+  padding: 24px 32px;
+  border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-header h1 {
+  margin: 0 0 4px 0;
+  color: #000000;
+  font-size: 24px;
+}
+
+.dashboard-header p {
+  margin: 0;
+  color: #000000;
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+.logout-button {
+  padding: 10px 20px;
+  background: #FF6B2C;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.logout-button:hover {
+  background: #e55a20;
+}
+
+.dashboard-content {
+  padding: 32px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+}
+
+.dashboard-card {
+  background: #ffffff;
+  padding: 32px;
+  border-radius: 12px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  border: 1px solid #e0e0e0;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: block;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.card-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.dashboard-card h2 {
+  margin: 0 0 8px 0;
+  color: #000000;
+  font-size: 20px;
+}
+
+.dashboard-card p {
+  margin: 0;
+  color: #000000;
+  font-size: 14px;
+  opacity: 0.7;
+}

@@ -1,12 +1,13 @@
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native'
 import { useRouter } from 'expo-router'
-import { getItemsByCategory } from '@/data/foodItems'
+import { useFoodItems } from '@/hooks/useFoodItems'
 import { useCart } from '@/contexts/CartContext'
 import TabBar from '@/components/TabBar'
 
 export default function StarterPage() {
   const router = useRouter()
   const { addItem } = useCart()
+  const { getItemsByCategory, loading } = useFoodItems()
   const items = getItemsByCategory('starters')
 
   const handleAddToCart = (item: any) => {
@@ -15,7 +16,7 @@ export default function StarterPage() {
       name: item.name,
       description: item.description,
       price: item.price,
-      image: item.image,
+      image_url: item.image_url,
       quantity: 1,
     })
   }
@@ -30,13 +31,29 @@ export default function StarterPage() {
         <View style={styles.placeholder} />
       </View>
 
-      <FlatList
-        data={items}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <Image source={item.image} style={styles.image} />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B2C" />
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      ) : items.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No items in this category</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={items}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => (
+            <View style={styles.card}>
+              {item.image_url ? (
+                <Image source={{ uri: item.image_url }} style={styles.image} />
+              ) : (
+                <View style={[styles.image, styles.placeholderImage]}>
+                  <Text style={styles.placeholderText}>No Image</Text>
+                </View>
+              )}
             <View style={styles.textContainer}>
               <Text style={styles.name}>{item.name}</Text>
               <Text style={styles.description}>{item.description}</Text>
@@ -51,8 +68,9 @@ export default function StarterPage() {
               </View>
             </View>
           </View>
+            )}
+          />
         )}
-      />
       <TabBar />
     </View>
   )
@@ -149,5 +167,35 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontWeight: 'bold',
     fontSize: 12,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#666',
+    fontSize: 14,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingTop: 100,
+  },
+  emptyText: {
+    color: '#666',
+    fontSize: 16,
+  },
+  placeholderImage: {
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: '#999',
+    fontSize: 10,
   },
 })

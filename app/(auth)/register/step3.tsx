@@ -55,7 +55,7 @@ export default function RegisterStep3() {
       if (errorMessage.includes('password') || errorMessage.includes('weak') || errorMessage.includes('invalid') || errorMessage.includes('too short') || errorMessage.includes('too long')) {
         // Redirect back to step1 with error message
         router.replace({
-          pathname: '/(auth)/register/step1',
+          pathname: '/(auth)/register/step1' as any,
           params: {
             error: 'Password validation failed. Please check your password requirements.',
             email: email, // Preserve email
@@ -77,7 +77,7 @@ export default function RegisterStep3() {
     }
 
     // Sign in immediately after signup to establish session
-    const { error: signInError } = await supabase.auth.signInWithPassword({ 
+    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
       email, 
       password 
     })
@@ -87,7 +87,7 @@ export default function RegisterStep3() {
       const errorMessage = signInError.message.toLowerCase()
       if (errorMessage.includes('password') || errorMessage.includes('invalid') || errorMessage.includes('credentials')) {
         router.replace({
-          pathname: '/(auth)/register/step1',
+          pathname: '/(auth)/register/step1' as any,
           params: {
             error: 'Password validation failed. Please check your password and try again.',
             email: email,
@@ -101,22 +101,107 @@ export default function RegisterStep3() {
       return
     }
 
-    // Wait a moment for session to be established
-    await new Promise(resolve => setTimeout(resolve, 1000))
+    // Verify session is established
+    if (!signInData.session) {
+      setError('Session not established. Please try again.')
+      setLoading(false)
+      return
+    }
 
-    // Use upsert instead of insert to handle potential duplicates
-    const { data: profileData, error: profileError } = await supabase.from('profiles').upsert({
-      id: userId,
-      name,
-      contact,
-      address,
-      card_name: cardName,
-      card_number: cardNumber,
-      card_expiry: expiry,
-      card_cvc: cvc,
-    }, {
-      onConflict: 'id'
-    }).select()
+    // Wait a moment for session to be fully propagated
+    await new Promise(resolve => setTimeout(resolve, 1500))
+
+    // Verify we have an authenticated session before inserting
+    const { data: { session: currentSession } } = await supabase.auth.getSession()
+    if (!currentSession) {
+      setError('Session not established. Please try logging in again.')
+      setLoading(false)
+      return
+    }
+
+    const authenticatedUserId = currentSession.user.id
+    if (authenticatedUserId !== userId) {
+      setError('User ID mismatch. Please try again.')
+      setLoading(false)
+      return
+    }
+
+    // Try update first (in case profile was auto-created by trigger)
+    // Then insert if update returns no rows
+    let profileData, profileError
+    
+    // First try to update existing profile
+    const { data: updateData, error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        name,
+        contact,
+        address,
+        card_name: cardName,
+        card_number: cardNumber,
+        card_expiry: expiry,
+        card_cvc: cvc,
+      })
+      .eq('id', authenticatedUserId)
+      .select()
+
+    if (updateError && updateError.code !== 'PGRST116') {
+      // If update fails for reasons other than "not found", try insert
+      const { data: insertData, error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authenticatedUserId,
+          name,
+          contact,
+          address,
+          card_name: cardName,
+          card_number: cardNumber,
+          card_expiry: expiry,
+          card_cvc: cvc,
+        })
+        .select()
+
+      if (insertError) {
+        // Check if it's an RLS policy error
+        if (insertError.code === '42501' || insertError.message.includes('row-level security')) {
+          console.error('RLS Policy Error:', insertError)
+          setError('Database security error. Please run the SQL script in fix-rls-policy.sql in your Supabase SQL Editor.')
+        } else {
+          profileError = insertError
+        }
+      } else {
+        profileData = insertData
+      }
+    } else if (updateData && updateData.length > 0) {
+      // Update succeeded
+      profileData = updateData
+    } else {
+      // Profile doesn't exist, try insert
+      const { data: insertData, error: insertError } = await supabase
+        .from('profiles')
+        .insert({
+          id: authenticatedUserId,
+          name,
+          contact,
+          address,
+          card_name: cardName,
+          card_number: cardNumber,
+          card_expiry: expiry,
+          card_cvc: cvc,
+        })
+        .select()
+
+      if (insertError) {
+        if (insertError.code === '42501' || insertError.message.includes('row-level security')) {
+          console.error('RLS Policy Error:', insertError)
+          setError('Database security error. Please run the SQL script in fix-rls-policy.sql in your Supabase SQL Editor.')
+        } else {
+          profileError = insertError
+        }
+      } else {
+        profileData = insertData
+      }
+    }
 
     if (profileError) {
       console.error('Profile error:', profileError)
@@ -126,7 +211,7 @@ export default function RegisterStep3() {
     }
 
     console.log('Profile saved successfully:', profileData)
-    router.replace('/(tabs)')
+    router.replace('/(tabs)/' as any)
   }
 
   return (
@@ -197,7 +282,7 @@ export default function RegisterStep3() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+        <TouchableOpacity onPress={() => router.push('/(auth)/login' as any)}>
           <Text style={styles.footerLink}>Login</Text>
         </TouchableOpacity>
       </View>

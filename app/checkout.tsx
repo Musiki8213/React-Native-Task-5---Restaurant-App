@@ -41,7 +41,7 @@ export default function CheckoutScreen() {
             }
           })
       } else {
-        router.replace('/(auth)/login')
+        router.replace('/(auth)/login' as any)
       }
     })
   }, [])
@@ -86,10 +86,11 @@ export default function CheckoutScreen() {
       }
 
       clearCart()
-      Alert.alert('Success', 'Your order has been placed!', [
+      setLoading(false)
+      Alert.alert('Success', 'Your order has been placed', [
         {
           text: 'OK',
-          onPress: () => router.replace('/(tabs)/orders'),
+          onPress: () => router.replace('/(tabs)/orders' as any),
         },
       ])
     } catch (error) {

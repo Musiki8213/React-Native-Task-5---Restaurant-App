@@ -1,14 +1,15 @@
 import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native'
-import { useRouter } from 'expo-router'
-import { useState, useEffect } from 'react'
+import { useRouter, useFocusEffect } from 'expo-router'
+import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
+import TabBar from '@/components/TabBar'
 
 export default function OrdersScreen() {
   const router = useRouter()
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
+  const loadOrders = useCallback(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         supabase
@@ -27,6 +28,17 @@ export default function OrdersScreen() {
       }
     })
   }, [])
+
+  useEffect(() => {
+    loadOrders()
+  }, [loadOrders])
+
+  // Refresh orders when screen comes into focus
+  useFocusEffect(
+    useCallback(() => {
+      loadOrders()
+    }, [loadOrders])
+  )
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -57,7 +69,7 @@ export default function OrdersScreen() {
         <Text style={styles.emptyText}>No orders yet</Text>
         <TouchableOpacity
           style={styles.shopButton}
-          onPress={() => router.push('/(tabs)')}
+          onPress={() => router.push('/(tabs)/' as any)}
         >
           <Text style={styles.shopButtonText}>Start Shopping</Text>
         </TouchableOpacity>

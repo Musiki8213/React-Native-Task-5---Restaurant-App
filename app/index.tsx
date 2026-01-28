@@ -10,7 +10,7 @@ export default function LandingPage() {
     // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        router.replace('/(tabs)')
+        router.replace('/(tabs)/' as any)
       }
     })
   }, [])
@@ -37,7 +37,7 @@ export default function LandingPage() {
 
         <TouchableOpacity
           style={styles.button}
-          onPress={() => router.push('/(auth)/login')}
+          onPress={() => router.push('/(auth)/login' as any)}
           activeOpacity={0.8}
         >
           <Text style={styles.buttonText}>Get Started</Text>

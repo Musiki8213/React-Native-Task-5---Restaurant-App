@@ -6,10 +6,11 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  ActivityIndicator,
 } from 'react-native'
 import { useRouter, useLocalSearchParams } from 'expo-router'
-import { useState } from 'react'
-import { foodItems } from '@/data/foodItems'
+import { useState, useEffect } from 'react'
+import { useFoodItems } from '@/hooks/useFoodItems'
 import { useCart } from '@/contexts/CartContext'
 import TabBar from '@/components/TabBar'
 
@@ -17,20 +18,36 @@ export default function ItemDetailScreen() {
   const router = useRouter()
   const { id } = useLocalSearchParams<{ id: string }>()
   const { addItem } = useCart()
+  const { foodItems, loading } = useFoodItems()
   const item = foodItems.find((i) => i.id === id)
 
   const [selectedSides, setSelectedSides] = useState<string[]>([])
   const [selectedDrinks, setSelectedDrinks] = useState<string[]>([])
   const [selectedExtras, setSelectedExtras] = useState<{ name: string; price: number }[]>([])
-  const [selectedOptional, setSelectedOptional] = useState<string[]>(
-    item?.optionalIngredients?.filter((i) => i.default).map((i) => i.name) || []
-  )
+  const [selectedOptional, setSelectedOptional] = useState<string[]>([])
+  
+  useEffect(() => {
+    if (item?.optional_ingredients) {
+      setSelectedOptional(
+        item.optional_ingredients.filter((i: any) => i.default).map((i: any) => i.name) || []
+      )
+    }
+  }, [item])
   const [quantity, setQuantity] = useState(1)
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <ActivityIndicator size="large" color="#FF6B2C" />
+        <Text style={styles.loadingText}>Loading...</Text>
+      </View>
+    )
+  }
 
   if (!item) {
     return (
       <View style={styles.container}>
-        <Text>Item not found</Text>
+        <Text style={styles.errorText}>Item not found</Text>
       </View>
     )
   }
@@ -87,7 +104,7 @@ export default function ItemDetailScreen() {
       name: item.name,
       description: item.description,
       price: item.price,
-      image: item.image,
+      image_url: item.image_url,
       quantity,
       customization: {
         sides: selectedSides,
@@ -110,7 +127,13 @@ export default function ItemDetailScreen() {
         <View style={styles.placeholder} />
       </View>
 
-      <Image source={item.image} style={styles.image} />
+      {item.image_url ? (
+        <Image source={{ uri: item.image_url }} style={styles.image} />
+      ) : (
+        <View style={[styles.image, styles.placeholderImage]}>
+          <Text style={styles.placeholderText}>No Image</Text>
+        </View>
+      )}
 
       <View style={styles.content}>
         <Text style={styles.name}>{item.name}</Text>
@@ -118,7 +141,7 @@ export default function ItemDetailScreen() {
         <Text style={styles.price}>R{item.price.toFixed(2)}</Text>
 
         {/* Sides */}
-        {item.sides && item.sides.length > 0 && (
+        {item.sides && Array.isArray(item.sides) && item.sides.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>
               Choose Sides (Select up to {item.sides.length <= 2 ? item.sides.length : 2})
@@ -140,7 +163,7 @@ export default function ItemDetailScreen() {
         )}
 
         {/* Drinks */}
-        {item.drinks && item.drinks.length > 0 && (
+        {item.drinks && Array.isArray(item.drinks) && item.drinks.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Drink Options</Text>
             {item.drinks.map((drink) => (
@@ -162,7 +185,7 @@ export default function ItemDetailScreen() {
         )}
 
         {/* Extras */}
-        {item.extras && item.extras.length > 0 && (
+        {item.extras && Array.isArray(item.extras) && item.extras.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Extras</Text>
             {item.extras.map((extra) => (
@@ -182,10 +205,10 @@ export default function ItemDetailScreen() {
         )}
 
         {/* Optional Ingredients */}
-        {item.optionalIngredients && item.optionalIngredients.length > 0 && (
+        {item.optional_ingredients && Array.isArray(item.optional_ingredients) && item.optional_ingredients.length > 0 && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Optional Ingredients</Text>
-            {item.optionalIngredients.map((ingredient) => (
+            {(item.optional_ingredients || []).map((ingredient) => (
               <TouchableOpacity
                 key={ingredient.name}
                 style={[
@@ -386,5 +409,23 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  loadingText: {
+    marginTop: 12,
+    color: '#666',
+    fontSize: 14,
+  },
+  errorText: {
+    color: '#666',
+    fontSize: 16,
+  },
+  placeholderImage: {
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: '#999',
+    fontSize: 14,
   },
 })

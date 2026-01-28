@@ -36,7 +36,7 @@ export default function ProfileScreen() {
       }
       
       if (!session) {
-        router.replace('/(auth)/login')
+        router.replace('/(auth)/login' as any)
         return
       }
       
@@ -122,7 +122,7 @@ export default function ProfileScreen() {
 
   const handleLogout = async () => {
     await supabase.auth.signOut()
-    router.replace('/')
+    router.replace('/' as any)
   }
 
   return (

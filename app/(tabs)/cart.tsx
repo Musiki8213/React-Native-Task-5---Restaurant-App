@@ -27,10 +27,10 @@ export default function CartScreen() {
   const handleCheckout = () => {
     if (!isAuthenticated) {
       alert('Please login to checkout')
-      router.push('/(auth)/login')
+      router.push('/(auth)/login' as any)
       return
     }
-    router.push('/checkout')
+    router.push('/checkout' as any)
   }
 
   if (items.length === 0) {
@@ -39,7 +39,7 @@ export default function CartScreen() {
         <Text style={styles.emptyText}>Your cart is empty</Text>
         <TouchableOpacity
           style={styles.shopButton}
-          onPress={() => router.push('/(tabs)')}
+          onPress={() => router.push('/(tabs)/' as any)}
         >
           <Text style={styles.shopButtonText}>Start Shopping</Text>
         </TouchableOpacity>
@@ -63,7 +63,15 @@ export default function CartScreen() {
         contentContainerStyle={styles.list}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Image source={item.image} style={styles.image} />
+            {item.image_url ? (
+              <Image source={{ uri: item.image_url }} style={styles.image} />
+            ) : item.image ? (
+              <Image source={item.image} style={styles.image} />
+            ) : (
+              <View style={[styles.image, styles.placeholderImage]}>
+                <Text style={styles.placeholderText}>No Image</Text>
+              </View>
+            )}
             <View style={styles.textContainer}>
               <View style={styles.itemHeader}>
                 <Text style={styles.name}>{item.name}</Text>
@@ -292,5 +300,14 @@ const styles = StyleSheet.create({
     color: '#FF6B2C',
     fontSize: 14,
     fontWeight: '600',
+  },
+  placeholderImage: {
+    backgroundColor: '#f0f0f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: '#999',
+    fontSize: 10,
   },
 })

@@ -5,7 +5,8 @@ export interface CartItem {
   name: string
   description: string
   price: number
-  image: any
+  image_url?: string | null
+  image?: any // Keep for backward compatibility
   quantity: number
   customization?: {
     sides?: string[]

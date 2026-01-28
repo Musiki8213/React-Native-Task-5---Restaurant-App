@@ -11,12 +11,13 @@ import {
 import { useRouter } from 'expo-router'
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabase'
-import { foodItems } from '@/data/foodItems'
+import { useFoodItems } from '@/hooks/useFoodItems'
 
 export default function AdminDashboard() {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'items' | 'orders' | 'settings'>('dashboard')
   const [orders, setOrders] = useState<any[]>([])
+  const { foodItems } = useFoodItems()
   const [stats, setStats] = useState({
     totalOrders: 0,
     totalRevenue: 0,

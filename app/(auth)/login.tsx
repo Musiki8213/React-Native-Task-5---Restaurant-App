@@ -24,7 +24,7 @@ export default function Login() {
       setError(error.message)
       setLoading(false)
     } else {
-      router.replace('/(tabs)')
+      router.replace('/(tabs)/' as any)
     }
   }
 
@@ -91,7 +91,7 @@ export default function Login() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Don't have an account? </Text>
-        <TouchableOpacity onPress={() => router.push('/(auth)/register/step1')}>
+        <TouchableOpacity onPress={() => router.push('/(auth)/register/step1' as any)}>
           <Text style={styles.footerLink}>Register</Text>
         </TouchableOpacity>
       </View>

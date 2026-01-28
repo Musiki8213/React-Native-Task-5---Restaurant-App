@@ -23,7 +23,7 @@ export default function RegisterStep2() {
     setError(null)
 
     router.push({
-      pathname: '/(auth)/register/step3',
+      pathname: '/(auth)/register/step3' as any,
       params: {
         email,
         password,
@@ -87,7 +87,7 @@ export default function RegisterStep2() {
 
       <View style={styles.footer}>
         <Text style={styles.footerText}>Already have an account? </Text>
-        <TouchableOpacity onPress={() => router.push('/(auth)/login')}>
+        <TouchableOpacity onPress={() => router.push('/(auth)/login' as any)}>
           <Text style={styles.footerLink}>Login</Text>
         </TouchableOpacity>
       </View>

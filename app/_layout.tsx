@@ -24,16 +24,17 @@ function useProtectedRoute() {
   useEffect(() => {
     if (isAuthenticated === null) return
 
-    const inAuthGroup = segments[0] === '(auth)'
-    const inTabsGroup = segments[0] === '(tabs)'
-    const isLandingPage = segments.length === 0 || segments[0] === 'index'
+    const segmentsArray = segments as string[]
+    const inAuthGroup = segmentsArray[0] === '(auth)'
+    const inTabsGroup = segmentsArray[0] === '(tabs)'
+    const isLandingPage = segmentsArray.length === 0 || segmentsArray[0] === 'index'
 
     if (!isAuthenticated && !inAuthGroup && !isLandingPage) {
-      router.replace('/(auth)/login')
+      router.replace('/(auth)/login' as any)
     } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/(tabs)')
+      router.replace('/(tabs)/' as any)
     }
-  }, [isAuthenticated, segments])
+  }, [isAuthenticated, segments, router])
 }
 
 export default function RootLayout() {
