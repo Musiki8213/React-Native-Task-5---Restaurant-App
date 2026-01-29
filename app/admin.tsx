@@ -1,17 +1,16 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  Alert,
-} from 'react-native'
-import { useRouter } from 'expo-router'
-import { useState, useEffect } from 'react'
-import { supabase } from '@/lib/supabase'
 import { useFoodItems } from '@/hooks/useFoodItems'
+import { supabase } from '@/lib/supabase'
+import { Ionicons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
+import {
+    FlatList,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -174,7 +173,7 @@ export default function AdminDashboard() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.title}>Admin Dashboard</Text>
         <View style={styles.placeholder} />
