@@ -1,11 +1,15 @@
-import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import type { Category } from '../types'
 import './AddFoodItem.css'
 
 export default function AddFoodItem() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const itemId = searchParams.get('id')
+  const isEditMode = !!itemId
+  
   const [categories, setCategories] = useState<Category[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -17,6 +21,7 @@ export default function AddFoodItem() {
   })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
 
   const loadCategories = async () => {
     try {
@@ -30,8 +35,42 @@ export default function AddFoodItem() {
 
   useEffect(() => {
     loadCategories()
+    if (isEditMode && itemId) {
+      loadFoodItem(itemId)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [itemId, isEditMode])
+
+  const loadFoodItem = async (id: string) => {
+    try {
+      setLoading(true)
+      const { data, error } = await supabase
+        .from('food_items')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+
+      if (data) {
+        setFormData({
+          name: data.name || '',
+          description: data.description || '',
+          price: data.price?.toString() || '',
+          category_id: data.category_id || '',
+        })
+        if (data.image_url) {
+          setExistingImageUrl(data.image_url)
+          setImagePreview(data.image_url)
+        }
+      }
+    } catch (err: any) {
+      console.error('Error loading food item:', err)
+      setError('Failed to load food item: ' + err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -58,47 +97,70 @@ export default function AddFoodItem() {
         return
       }
 
-      if (!imageFile) {
+      if (!imageFile && !existingImageUrl) {
         setError('Please select an image')
         setLoading(false)
         return
       }
 
-      // Upload image to Supabase Storage
-      const fileExt = imageFile.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `food-images/${fileName}`
+      let imageUrl = existingImageUrl
 
-      const { error: uploadError } = await supabase.storage
-        .from('food-images')
-        .upload(filePath, imageFile)
+      // Upload new image if provided
+      if (imageFile) {
+        const fileExt = imageFile.name.split('.').pop()
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+        const filePath = `food-images/${fileName}`
 
-      if (uploadError) {
-        throw uploadError
+        const { error: uploadError } = await supabase.storage
+          .from('food-images')
+          .upload(filePath, imageFile)
+
+        if (uploadError) {
+          throw uploadError
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage.from('food-images').getPublicUrl(filePath)
+        imageUrl = urlData.publicUrl
       }
 
-      // Get public URL
-      const { data: urlData } = supabase.storage.from('food-images').getPublicUrl(filePath)
-      const imageUrl = urlData.publicUrl
+      if (isEditMode && itemId) {
+        // Update existing food item
+        const { error: updateError } = await supabase
+          .from('food_items')
+          .update({
+            name: formData.name,
+            description: formData.description,
+            price: parseFloat(formData.price),
+            image_url: imageUrl,
+            category_id: formData.category_id,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', itemId)
 
-      // Save food item to database
-      const { error: insertError } = await supabase.from('food_items').insert({
-        name: formData.name,
-        description: formData.description,
-        price: parseFloat(formData.price),
-        image_url: imageUrl,
-        category_id: formData.category_id,
-      })
+        if (updateError) {
+          throw updateError
+        }
+      } else {
+        // Insert new food item
+        const { error: insertError } = await supabase.from('food_items').insert({
+          name: formData.name,
+          description: formData.description,
+          price: parseFloat(formData.price),
+          image_url: imageUrl,
+          category_id: formData.category_id,
+        })
 
-      if (insertError) {
-        throw insertError
+        if (insertError) {
+          throw insertError
+        }
       }
 
       // Success - redirect to food items list
       navigate('/food-items')
     } catch (err: any) {
-      console.error('Error adding food item:', err)
-      setError(err.message || 'Failed to add food item')
+      console.error(`Error ${isEditMode ? 'updating' : 'adding'} food item:`, err)
+      setError(err.message || `Failed to ${isEditMode ? 'update' : 'add'} food item`)
       setLoading(false)
     }
   }
@@ -106,8 +168,11 @@ export default function AddFoodItem() {
   return (
     <div className="add-food-container">
       <header className="page-header">
-        <button onClick={() => navigate('/dashboard')} className="back-button">
-          ← Back to Dashboard
+        <button type="button" onClick={() => navigate('/dashboard')} className="back-button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="back-arrow-icon" aria-hidden>
+            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back to Dashboard
         </button>
         <h1>Add Food Item</h1>
       </header>
@@ -172,17 +237,20 @@ export default function AddFoodItem() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="image">Food Image *</label>
+            <label htmlFor="image">Food Image {!isEditMode && '*'}</label>
             <input
               id="image"
               type="file"
               accept="image/*"
               onChange={handleImageChange}
-              required
+              required={!isEditMode}
             />
             {imagePreview && (
               <div className="image-preview">
                 <img src={imagePreview} alt="Preview" />
+                {isEditMode && existingImageUrl && (
+                  <p className="image-note">Leave empty to keep current image</p>
+                )}
               </div>
             )}
           </div>
@@ -194,7 +262,7 @@ export default function AddFoodItem() {
               Cancel
             </button>
             <button type="submit" disabled={loading} className="submit-button">
-              {loading ? 'Adding...' : 'Add Food Item'}
+              {loading ? (isEditMode ? 'Updating...' : 'Adding...') : (isEditMode ? 'Update Food Item' : 'Add Food Item')}
             </button>
           </div>
         </form>

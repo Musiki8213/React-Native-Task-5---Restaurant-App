@@ -70,8 +70,16 @@
 }
 
 .card-icon {
-  font-size: 48px;
   margin-bottom: 16px;
+  color: #FF6B2C;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-icon svg {
+  width: 48px;
+  height: 48px;
 }
 
 .dashboard-card h2 {
@@ -85,4 +93,147 @@
   color: #000000;
   font-size: 14px;
   opacity: 0.7;
+}
+
+/* Analytics */
+.analytics-error {
+  background: #fee;
+  color: #c33;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+  border: 1px solid #fcc;
+}
+
+.analytics-loading {
+  text-align: center;
+  padding: 32px;
+  color: #666;
+}
+
+.analytics-section {
+  margin-bottom: 40px;
+}
+
+.analytics-title {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  color: #000;
+}
+
+.analytics-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 20px;
+  margin-bottom: 28px;
+}
+
+.analytics-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.analytics-card-value {
+  font-size: 28px;
+  font-weight: 700;
+  color: #FF6B2C;
+}
+
+.analytics-card-label {
+  font-size: 14px;
+  color: #666;
+}
+
+.analytics-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.analytics-box {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.analytics-box h3 {
+  margin: 0 0 16px 0;
+  font-size: 16px;
+  color: #000;
+}
+
+.analytics-empty {
+  margin: 0;
+  color: #999;
+  font-size: 14px;
+}
+
+.most-ordered-list,
+.orders-per-day-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.most-ordered-list li,
+.orders-per-day-list li {
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.most-ordered-list li:last-child,
+.orders-per-day-list li:last-child {
+  border-bottom: none;
+}
+
+.most-ordered-list .rank {
+  color: #999;
+  min-width: 24px;
+}
+
+.most-ordered-list .item-name {
+  flex: 1;
+  color: #000;
+}
+
+.most-ordered-list .item-qty {
+  color: #666;
+  font-weight: 500;
+}
+
+.day-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+}
+
+.day-row .day-date {
+  color: #000;
+}
+
+.day-row .day-count {
+  color: #666;
+}
+
+.day-row .day-revenue {
+  font-weight: 600;
+  color: #FF6B2C;
+}
+
+.dashboard-links .section-title {
+  margin: 0 0 20px 0;
+  font-size: 18px;
+  color: #000;
 }

@@ -18,10 +18,17 @@
   padding: 0;
   margin-bottom: 16px;
   font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .back-button:hover {
   text-decoration: underline;
+}
+
+.back-arrow-icon {
+  flex-shrink: 0;
 }
 
 .header-content {
@@ -186,6 +193,27 @@
   font-size: 20px;
   font-weight: 700;
   color: #FF6B2C;
+}
+
+.food-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.edit-button {
+  padding: 8px 16px;
+  background: #FF6B2C;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.edit-button:hover {
+  background: #e55a20;
 }
 
 .delete-button {

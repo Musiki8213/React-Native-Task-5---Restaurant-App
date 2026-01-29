@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
-import type { FoodItem, Category } from '../types'
+import type { Category, FoodItem } from '../types'
 import './FoodItems.css'
 
 export default function FoodItems() {
@@ -73,13 +73,19 @@ export default function FoodItems() {
   return (
     <div className="food-items-container">
       <header className="page-header">
-        <button onClick={() => navigate('/dashboard')} className="back-button">
-          ← Back to Dashboard
+        <button type="button" onClick={() => navigate('/dashboard')} className="back-button">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="back-arrow-icon" aria-hidden>
+            <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
+          </svg>
+          Back to Dashboard
         </button>
         <div className="header-content">
           <h1>Food Items</h1>
-          <button onClick={() => navigate('/add-food-item')} className="add-button">
-            + Add Food Item
+          <button type="button" onClick={() => navigate('/add-food-item')} className="add-button">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ marginRight: 6, verticalAlign: 'middle' }} aria-hidden>
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Add Food Item
           </button>
         </div>
       </header>
@@ -128,12 +134,20 @@ export default function FoodItems() {
                   <p className="food-item-description">{item.description}</p>
                   <div className="food-item-footer">
                     <span className="food-item-price">R{item.price.toFixed(2)}</span>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="delete-button"
-                    >
-                      Delete
-                    </button>
+                    <div className="food-item-actions">
+                      <button
+                        onClick={() => navigate(`/add-food-item?id=${item.id}`)}
+                        className="edit-button"
+                      >
+                        Edit
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="delete-button"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
