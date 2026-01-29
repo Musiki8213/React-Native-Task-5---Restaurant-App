@@ -1,8 +1,8 @@
-import { View, Text, FlatList, StyleSheet, TouchableOpacity } from 'react-native'
-import { useRouter, useFocusEffect } from 'expo-router'
-import { useState, useEffect, useCallback } from 'react'
-import { supabase } from '@/lib/supabase'
 import TabBar from '@/components/TabBar'
+import { supabase } from '@/lib/supabase'
+import { useFocusEffect, useRouter } from 'expo-router'
+import { useCallback, useEffect, useState } from 'react'
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 export default function OrdersScreen() {
   const router = useRouter()
@@ -10,20 +10,32 @@ export default function OrdersScreen() {
   const [loading, setLoading] = useState(true)
 
   const loadOrders = useCallback(() => {
+    console.log('Loading orders...')
+    setLoading(true)
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
+        console.log('Session found, fetching orders for user:', session.user.id)
         supabase
           .from('orders')
           .select('*')
           .eq('user_id', session.user.id)
           .order('created_at', { ascending: false })
           .then(({ data, error }) => {
+            if (error) {
+              console.error('Error loading orders:', error)
+              setLoading(false)
+              return
+            }
+            console.log('Orders loaded:', data?.length || 0, 'orders')
             if (data) {
               setOrders(data)
+            } else {
+              setOrders([])
             }
             setLoading(false)
           })
       } else {
+        console.log('No session found')
         setLoading(false)
       }
     })
@@ -36,7 +48,11 @@ export default function OrdersScreen() {
   // Refresh orders when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      loadOrders()
+      console.log('Orders screen focused, reloading orders...')
+      // Small delay to ensure database has committed
+      setTimeout(() => {
+        loadOrders()
+      }, 500)
     }, [loadOrders])
   )
 

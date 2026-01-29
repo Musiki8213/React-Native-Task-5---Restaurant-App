@@ -1,16 +1,15 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Alert,
-} from 'react-native'
-import { useRouter, useFocusEffect } from 'expo-router'
-import { useState, useEffect, useCallback } from 'react'
 import { supabase } from '@/lib/supabase'
-import TabBar from '@/components/TabBar'
+import { useFocusEffect, useRouter } from 'expo-router'
+import { useCallback, useEffect, useState } from 'react'
+import {
+    Alert,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
+} from 'react-native'
 
 export default function ProfileScreen() {
   const router = useRouter()
@@ -51,15 +50,13 @@ export default function ProfileScreen() {
         
       if (error) {
         console.error('Profile fetch error:', error)
-        // Don't show alert on initial load, just log it
-        if (error.code !== 'PGRST116') { // PGRST116 is "not found"
+        if (error.code !== 'PGRST116') {
           console.error('Profile error details:', error)
         }
         return
       }
       
       if (data) {
-        console.log('Profile loaded:', data)
         setProfile(data)
         setName(data.name || '')
         setContact(data.contact || '')
@@ -68,8 +65,6 @@ export default function ProfileScreen() {
         setCardNumber(data.card_number || '')
         setCardExpiry(data.card_expiry || '')
         setCardCvc(data.card_cvc || '')
-      } else {
-        console.warn('No profile data found for user:', session.user.id)
       }
     } catch (error) {
       console.error('Error loading profile:', error)
@@ -80,7 +75,6 @@ export default function ProfileScreen() {
     loadProfile()
   }, [loadProfile])
 
-  // Reload profile when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       loadProfile()
@@ -193,8 +187,19 @@ export default function ProfileScreen() {
               <TextInput
                 style={styles.input}
                 value={cardExpiry}
-                onChangeText={setCardExpiry}
+                onChangeText={(text) => {
+                  const cleaned = text.replace(/\D/g, '')
+                  if (cleaned.length <= 4) {
+                    let formatted = cleaned
+                    if (cleaned.length >= 2) {
+                      formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2)
+                    }
+                    setCardExpiry(formatted)
+                  }
+                }}
                 placeholder="MM/YY"
+                keyboardType="numeric"
+                maxLength={5}
               />
             </View>
             <View style={styles.halfWidth}>

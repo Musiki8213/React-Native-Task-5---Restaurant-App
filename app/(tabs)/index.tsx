@@ -1,17 +1,18 @@
 import TabBar from '@/components/TabBar'
 import { useFoodItems } from '@/hooks/useFoodItems'
 import { supabase } from '@/lib/supabase'
+import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
 import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-  ActivityIndicator,
+    ActivityIndicator,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native'
 
 export default function HomeScreen() {
@@ -108,7 +109,14 @@ export default function HomeScreen() {
   ]
 
   const renderStars = (rating: number) => {
-    return '⭐'.repeat(rating)
+    const stars = Math.min(5, Math.max(0, Math.round(rating)))
+    return (
+      <View style={styles.starRow}>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <Ionicons key={i} name={i <= stars ? 'star' : 'star-outline'} size={14} color="#FF6B2C" style={styles.starIcon} />
+        ))}
+      </View>
+    )
   }
 
   return (
@@ -121,7 +129,7 @@ export default function HomeScreen() {
 
         {/* Search Bar */}
         <View style={styles.searchContainer}>
-          <Text style={styles.searchIcon}>🔍</Text>
+          <Ionicons name="search" size={20} color="#666" style={styles.searchIcon} />
           <TextInput
             style={styles.searchBar}
             placeholder="Search here..."
@@ -214,7 +222,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   searchIcon: {
-    fontSize: 18,
     marginRight: 8,
   },
   searchBar: {
@@ -286,6 +293,13 @@ const styles = StyleSheet.create({
   },
   rating: {
     fontSize: 12,
+  },
+  starRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  starIcon: {
+    marginLeft: 1,
   },
   loadingContainer: {
     padding: 40,

@@ -1,17 +1,17 @@
-import {
-  View,
-  Text,
-  FlatList,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native'
-import { useRouter } from 'expo-router'
+import TabBar from '@/components/TabBar'
 import { useCart } from '@/contexts/CartContext'
 import { supabase } from '@/lib/supabase'
-import { useState, useEffect } from 'react'
-import TabBar from '@/components/TabBar'
+import { Ionicons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
+import {
+    FlatList,
+    Image,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native'
 
 export default function CartScreen() {
   const router = useRouter()
@@ -51,7 +51,7 @@ export default function CartScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.title}>Cart</Text>
         <View style={styles.placeholder} />
@@ -79,7 +79,7 @@ export default function CartScreen() {
                   onPress={() => removeItem(item.id)}
                   style={styles.removeButton}
                 >
-                  <Text style={styles.removeIcon}>✕</Text>
+                  <Ionicons name="close" size={20} color="#666" />
                 </TouchableOpacity>
               </View>
               <Text style={styles.description}>{item.description}</Text>
