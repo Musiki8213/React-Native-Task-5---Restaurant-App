@@ -1,22 +1,22 @@
 import { supabase } from '@/lib/supabase'
+import { Ionicons } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState } from 'react'
 import {
-  ActivityIndicator,
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from 'react-native'
 
 export default function RegisterStep3() {
   const router = useRouter()
   const params = useLocalSearchParams()
 
-  // ✅ normalize params
   const email = String(params.email || '')
   const password = String(params.password || '')
   const name = String(params.name || '')
@@ -26,6 +26,17 @@ export default function RegisterStep3() {
   const [cardName, setCardName] = useState('')
   const [cardNumber, setCardNumber] = useState('')
   const [expiry, setExpiry] = useState('')
+
+  const handleExpiryChange = (text: string) => {
+    const cleaned = text.replace(/\D/g, '')
+    if (cleaned.length <= 4) {
+      let formatted = cleaned
+      if (cleaned.length >= 2) {
+        formatted = cleaned.slice(0, 2) + '/' + cleaned.slice(2)
+      }
+      setExpiry(formatted)
+    }
+  }
   const [cvc, setCvc] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
@@ -50,15 +61,13 @@ export default function RegisterStep3() {
     })
 
     if (authError) {
-      // Check if it's a password-related error - redirect back to step1
       const errorMessage = authError.message.toLowerCase()
       if (errorMessage.includes('password') || errorMessage.includes('weak') || errorMessage.includes('invalid') || errorMessage.includes('too short') || errorMessage.includes('too long')) {
-        // Redirect back to step1 with error message
         router.replace({
           pathname: '/(auth)/register/step1' as any,
           params: {
             error: 'Password validation failed. Please check your password requirements.',
-            email: email, // Preserve email
+            email: email,
           },
         })
         return
@@ -76,14 +85,12 @@ export default function RegisterStep3() {
       return
     }
 
-    // Sign in immediately after signup to establish session
     const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
       email, 
       password 
     })
 
     if (signInError) {
-      // Check if it's a password-related error - redirect back to step1
       const errorMessage = signInError.message.toLowerCase()
       if (errorMessage.includes('password') || errorMessage.includes('invalid') || errorMessage.includes('credentials')) {
         router.replace({
@@ -101,17 +108,14 @@ export default function RegisterStep3() {
       return
     }
 
-    // Verify session is established
     if (!signInData.session) {
       setError('Session not established. Please try again.')
       setLoading(false)
       return
     }
 
-    // Wait a moment for session to be fully propagated
     await new Promise(resolve => setTimeout(resolve, 1500))
 
-    // Verify we have an authenticated session before inserting
     const { data: { session: currentSession } } = await supabase.auth.getSession()
     if (!currentSession) {
       setError('Session not established. Please try logging in again.')
@@ -126,14 +130,12 @@ export default function RegisterStep3() {
       return
     }
 
-    // Try update first (in case profile was auto-created by trigger)
-    // Then insert if update returns no rows
-    let profileData, profileError
-    
-    // First try to update existing profile
-    const { data: updateData, error: updateError } = await supabase
+    // Ensure profile exists and update it with all registration data
+    // First, try to upsert (insert or update) the profile
+    const { data: profileData, error: profileError } = await supabase
       .from('profiles')
-      .update({
+      .upsert({
+        id: authenticatedUserId,
         name,
         contact,
         address,
@@ -141,83 +143,73 @@ export default function RegisterStep3() {
         card_number: cardNumber,
         card_expiry: expiry,
         card_cvc: cvc,
+      }, {
+        onConflict: 'id'
       })
-      .eq('id', authenticatedUserId)
       .select()
-
-    if (updateError && updateError.code !== 'PGRST116') {
-      // If update fails for reasons other than "not found", try insert
-      const { data: insertData, error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authenticatedUserId,
-          name,
-          contact,
-          address,
-          card_name: cardName,
-          card_number: cardNumber,
-          card_expiry: expiry,
-          card_cvc: cvc,
-        })
-        .select()
-
-      if (insertError) {
-        // Check if it's an RLS policy error
-        if (insertError.code === '42501' || insertError.message.includes('row-level security')) {
-          console.error('RLS Policy Error:', insertError)
-          setError('Database security error. Please run the SQL script in fix-rls-policy.sql in your Supabase SQL Editor.')
-        } else {
-          profileError = insertError
-        }
-      } else {
-        profileData = insertData
-      }
-    } else if (updateData && updateData.length > 0) {
-      // Update succeeded
-      profileData = updateData
-    } else {
-      // Profile doesn't exist, try insert
-      const { data: insertData, error: insertError } = await supabase
-        .from('profiles')
-        .insert({
-          id: authenticatedUserId,
-          name,
-          contact,
-          address,
-          card_name: cardName,
-          card_number: cardNumber,
-          card_expiry: expiry,
-          card_cvc: cvc,
-        })
-        .select()
-
-      if (insertError) {
-        if (insertError.code === '42501' || insertError.message.includes('row-level security')) {
-          console.error('RLS Policy Error:', insertError)
-          setError('Database security error. Please run the SQL script in fix-rls-policy.sql in your Supabase SQL Editor.')
-        } else {
-          profileError = insertError
-        }
-      } else {
-        profileData = insertData
-      }
-    }
+      .single()
 
     if (profileError) {
       console.error('Profile error:', profileError)
-      setError(`Failed to save profile: ${profileError.message}`)
-      setLoading(false)
-      return
+      
+      const { data: updateData, error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          name,
+          contact,
+          address,
+          card_name: cardName,
+          card_number: cardNumber,
+          card_expiry: expiry,
+          card_cvc: cvc,
+        })
+        .eq('id', authenticatedUserId)
+        .select()
+        .single()
+
+      if (updateError) {
+        const { data: insertData, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
+            id: authenticatedUserId,
+            name,
+            contact,
+            address,
+            card_name: cardName,
+            card_number: cardNumber,
+            card_expiry: expiry,
+            card_cvc: cvc,
+          })
+          .select()
+          .single()
+
+        if (insertError) {
+          if (insertError.code === '42501' || insertError.message.includes('row-level security')) {
+            console.error('RLS Policy Error:', insertError)
+            setError('Database security error. Please run the SQL script in fix-rls-policy.sql in your Supabase SQL Editor.')
+          } else {
+            setError(`Failed to save profile: ${insertError.message}`)
+          }
+          setLoading(false)
+          return
+        } else {
+          console.log('Profile created successfully:', insertData)
+        }
+      } else {
+        console.log('Profile updated successfully:', updateData)
+      }
+    } else {
+      console.log('Profile saved successfully:', profileData)
     }
 
-    console.log('Profile saved successfully:', profileData)
+    await new Promise(resolve => setTimeout(resolve, 500))
     router.replace('/(tabs)/' as any)
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backIcon}>←</Text>
+        <Ionicons name="chevron-back" size={24} color="#000" />
       </TouchableOpacity>
 
       <View style={styles.logoContainer}>
@@ -245,10 +237,12 @@ export default function RegisterStep3() {
         <View style={styles.halfWidth}>
           <Text style={styles.label}>Expiry Date</Text>
           <TextInput
-            placeholder="MM / YY"
+            placeholder="MM/YY"
             placeholderTextColor="#999"
+            keyboardType="numeric"
             value={expiry}
-            onChangeText={setExpiry}
+            onChangeText={handleExpiryChange}
+            maxLength={5}
             style={styles.input}
           />
         </View>

@@ -1,5 +1,6 @@
-import { useRouter, useLocalSearchParams } from 'expo-router'
-import { useState, useEffect } from 'react'
+import { Ionicons } from '@expo/vector-icons'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 export default function RegisterStep1() {
@@ -8,6 +9,8 @@ export default function RegisterStep1() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Check for error passed from step3
@@ -82,7 +85,7 @@ export default function RegisterStep1() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backIcon}>←</Text>
+        <Ionicons name="chevron-back" size={24} color="#000" />
       </TouchableOpacity>
 
       <View style={styles.logoContainer}>
@@ -200,6 +203,24 @@ const styles = StyleSheet.create({
     padding: 14,
     marginBottom: 16,
     fontSize: 16,
+  },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 12,
+    marginBottom: 16,
+  },
+  passwordInput: {
+    flex: 1,
+    padding: 14,
+    fontSize: 16,
+  },
+  eyeIcon: {
+    padding: 14,
+    paddingLeft: 0,
   },
   button: {
     backgroundColor: '#FF6B2C',

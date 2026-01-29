@@ -1,3 +1,4 @@
+import { Ionicons } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useState } from 'react'
 import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
@@ -37,7 +38,7 @@ export default function RegisterStep2() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
-        <Text style={styles.backIcon}>←</Text>
+        <Ionicons name="chevron-back" size={24} color="#000" />
       </TouchableOpacity>
 
       <View style={styles.logoContainer}>
