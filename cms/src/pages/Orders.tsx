@@ -83,7 +83,7 @@ export default function Orders() {
       setUpdatingId(orderId)
       const { error: updateError } = await supabase
         .from('orders')
-        .update({ status: newStatus, updated_at: new Date().toISOString() })
+        .update({ status: newStatus })
         .eq('id', orderId)
       if (updateError) throw updateError
       await loadOrders()
