@@ -1,18 +1,18 @@
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  ActivityIndicator,
-} from 'react-native'
-import { useRouter, useLocalSearchParams } from 'expo-router'
-import { useState, useEffect } from 'react'
-import { useFoodItems } from '@/hooks/useFoodItems'
-import { useCart } from '@/contexts/CartContext'
 import TabBar from '@/components/TabBar'
+import { useCart } from '@/contexts/CartContext'
+import { useFoodItems } from '@/hooks/useFoodItems'
+import { Ionicons } from '@expo/vector-icons'
+import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useEffect, useState } from 'react'
+import {
+    ActivityIndicator,
+    Image,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native'
 
 export default function ItemDetailScreen() {
   const router = useRouter()
@@ -121,7 +121,7 @@ export default function ItemDetailScreen() {
       <ScrollView style={styles.container}>
         <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>{item.name}</Text>
         <View style={styles.placeholder} />

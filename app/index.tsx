@@ -7,7 +7,6 @@ export default function LandingPage() {
   const router = useRouter()
 
   useEffect(() => {
-    // Check if user is already logged in
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
         router.replace('/(tabs)/' as any)
