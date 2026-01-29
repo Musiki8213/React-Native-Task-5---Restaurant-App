@@ -60,6 +60,39 @@
   border-color: #FF6B2C;
 }
 
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper input {
+  padding-right: 45px;
+}
+
+.eye-icon-button {
+  position: absolute;
+  right: 12px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #666;
+  transition: color 0.2s;
+}
+
+.eye-icon-button:hover {
+  color: #FF6B2C;
+}
+
+.eye-icon-button:focus {
+  outline: none;
+  color: #FF6B2C;
+}
+
 .error-message {
   background: #fee;
   color: #c33;
