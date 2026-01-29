@@ -1,13 +1,16 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth } from './contexts/AuthContext'
-import { ProtectedRoute } from './components/ProtectedRoute'
-import { ErrorBoundary } from './components/ErrorBoundary'
-import Login from './pages/Login'
-import Register from './pages/Register'
-import Dashboard from './pages/Dashboard'
-import AddFoodItem from './pages/AddFoodItem'
-import FoodItems from './pages/FoodItems'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
+import { ErrorBoundary } from './components/ErrorBoundary'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import { AuthProvider, useAuth } from './contexts/AuthContext'
+import AddFoodItem from './pages/AddFoodItem'
+import Customers from './pages/Customers'
+import Dashboard from './pages/Dashboard'
+import FoodItems from './pages/FoodItems'
+import Login from './pages/Login'
+import Orders from './pages/Orders'
+import Profile from './pages/Profile'
+import Register from './pages/Register'
 
 function AppRoutes() {
   const { isAdmin, loading } = useAuth()
@@ -47,6 +50,30 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <FoodItems />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/orders"
+        element={
+          <ProtectedRoute>
+            <Orders />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/customers"
+        element={
+          <ProtectedRoute>
+            <Customers />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
