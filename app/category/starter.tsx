@@ -1,8 +1,9 @@
-import { View, Text, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native'
-import { useRouter } from 'expo-router'
-import { useFoodItems } from '@/hooks/useFoodItems'
-import { useCart } from '@/contexts/CartContext'
 import TabBar from '@/components/TabBar'
+import { useCart } from '@/contexts/CartContext'
+import { useFoodItems } from '@/hooks/useFoodItems'
+import { Ionicons } from '@expo/vector-icons'
+import { useRouter } from 'expo-router'
+import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 export default function StarterPage() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function StarterPage() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backIcon}>←</Text>
+          <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.title}>Starters</Text>
         <View style={styles.placeholder} />
