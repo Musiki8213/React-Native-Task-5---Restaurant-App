@@ -35,7 +35,7 @@ npm run dev
 
 Open the URL shown (e.g. `http://localhost:5173`). Use the same Supabase project; set **`cms/src/lib/supabase.ts`** and ensure an admin user exists in the `profiles` table.
 
-**Host the CMS on Vercel:** See [DOCUMENTATION.md](./DOCUMENTATION.md#hosting-the-cms-on-vercel) for step-by-step deployment (root directory: `cms`, optional env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
+**Host the CMS on Vercel:** See [DOCUMENTATION.md](./DOCUMENTATION.md#hosting-the-cms-on-vercel) for step-by-step deployment (root directory: `cms`, optional env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`). The **hosted CMS link** is available under **Deployments** in this repository on GitHub.
 
 **Full setup and details:** [DOCUMENTATION.md](./DOCUMENTATION.md)
 
@@ -185,6 +185,7 @@ This project is created for educational purposes.
 
 - **Design (Figma)**: [Task 4 React Native | Restaurant App](https://www.figma.com/design/7ZIf4538aPzLMJQz82od2P/Task4-React-Native%7C-Restaurant-App?node-id=3-36&t=D1ASR63LK1hkGx6m-1)
 - **Repository**: [Add your repository link here]
+- **Hosted CMS**: The live CMS link is under **Deployments** in this repository on GitHub.
 - **Demo Video**: [Add your demo video link here]
 
 ## Contact
