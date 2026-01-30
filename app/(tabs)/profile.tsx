@@ -16,9 +16,9 @@ export default function ProfileScreen() {
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [profile, setProfile] = useState<any>(null)
-  const [name, setName] = useState('')
+  const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
-  const [contact, setContact] = useState('')
+  const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
   const [cardName, setCardName] = useState('')
   const [cardNumber, setCardNumber] = useState('')
@@ -58,8 +58,8 @@ export default function ProfileScreen() {
       
       if (data) {
         setProfile(data)
-        setName(data.name || '')
-        setContact(data.contact || '')
+        setFullName(data.full_name ?? data.name ?? '')
+        setPhone(data.phone ?? data.contact ?? '')
         setAddress(data.address || '')
         setCardName(data.card_name || '')
         setCardNumber(data.card_number || '')
@@ -90,8 +90,8 @@ export default function ProfileScreen() {
       const { error } = await supabase
         .from('profiles')
         .update({
-          name,
-          contact,
+          full_name: fullName,
+          phone,
           address,
           card_name: cardName,
           card_number: cardNumber,
@@ -131,11 +131,11 @@ export default function ProfileScreen() {
       <View style={styles.content}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Personal Information</Text>
-          <Text style={styles.label}>Name</Text>
+          <Text style={styles.label}>Full Name</Text>
           <TextInput
             style={styles.input}
-            value={name}
-            onChangeText={setName}
+            value={fullName}
+            onChangeText={setFullName}
             placeholder="Full Name"
           />
           <Text style={styles.label}>Email</Text>
@@ -145,12 +145,12 @@ export default function ProfileScreen() {
             editable={false}
             placeholder="Email"
           />
-          <Text style={styles.label}>Contact Number</Text>
+          <Text style={styles.label}>Phone</Text>
           <TextInput
             style={styles.input}
-            value={contact}
-            onChangeText={setContact}
-            placeholder="Contact Number"
+            value={phone}
+            onChangeText={setPhone}
+            placeholder="Phone"
             keyboardType="phone-pad"
           />
           <Text style={styles.label}>Address</Text>

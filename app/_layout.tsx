@@ -1,8 +1,8 @@
-import { Stack } from 'expo-router'
 import { CartProvider } from '@/contexts/CartContext'
-import { useEffect, useState } from 'react'
+import { RegistrationProvider } from '@/contexts/RegistrationContext'
 import { supabase } from '@/lib/supabase'
-import { useRouter, useSegments } from 'expo-router'
+import { Stack, useRouter, useSegments } from 'expo-router'
+import { useEffect, useState } from 'react'
 
 function useProtectedRoute() {
   const segments = useSegments()
@@ -32,7 +32,10 @@ function useProtectedRoute() {
     if (!isAuthenticated && !inAuthGroup && !isLandingPage) {
       router.replace('/(auth)/login' as any)
     } else if (isAuthenticated && inAuthGroup) {
-      router.replace('/(tabs)/' as any)
+      const inRegisterSteps = segmentsArray[1] === 'register' && (segmentsArray[2] === 'step2' || segmentsArray[2] === 'step3')
+      if (!inRegisterSteps) {
+        router.replace('/(tabs)/' as any)
+      }
     }
   }, [isAuthenticated, segments, router])
 }
@@ -42,7 +45,8 @@ export default function RootLayout() {
 
   return (
     <CartProvider>
-      <Stack screenOptions={{ headerShown: false }}>
+      <RegistrationProvider>
+        <Stack screenOptions={{ headerShown: false }}>
         {/* Landing page */}
         <Stack.Screen name="index" />
 
@@ -59,6 +63,7 @@ export default function RootLayout() {
         <Stack.Screen name="checkout" />
         <Stack.Screen name="admin" />
       </Stack>
+      </RegistrationProvider>
     </CartProvider>
   )
 }

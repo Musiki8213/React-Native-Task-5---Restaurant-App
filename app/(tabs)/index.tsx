@@ -19,7 +19,7 @@ export default function HomeScreen() {
   const router = useRouter()
   const [userName, setUserName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
-  const { foodItems, loading: itemsLoading } = useFoodItems()
+  const { foodItems, featuredItems, loading: itemsLoading } = useFoodItems()
   const [filteredItems, setFilteredItems] = useState<any[]>([])
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function HomeScreen() {
         if (session) {
           const { data, error } = await supabase
             .from('profiles')
-            .select('name')
+            .select('full_name, name')
             .eq('id', session.user.id)
             .single()
             
@@ -43,8 +43,8 @@ export default function HomeScreen() {
             return
           }
           
-          if (data?.name) {
-            setUserName(data.name)
+          if (data?.full_name ?? data?.name) {
+            setUserName(data.full_name ?? data.name)
           }
         }
       } catch (error) {
@@ -64,7 +64,8 @@ export default function HomeScreen() {
       )
       setFilteredItems(filtered)
     } else {
-      setFilteredItems(foodItems.slice(0, 3))
+      const nonFeatured = foodItems.filter((item) => !item.is_featured)
+      setFilteredItems(nonFeatured.slice(0, 6))
     }
   }, [searchQuery, foodItems])
 
@@ -138,6 +139,35 @@ export default function HomeScreen() {
             onChangeText={setSearchQuery}
           />
         </View>
+
+        {/* Featured section */}
+        {featuredItems.length > 0 && (
+          <View style={styles.featuredSection}>
+            <Text style={styles.featuredSectionTitle}>Featured</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
+              {featuredItems.map((item) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.featuredCard}
+                  onPress={() => router.push(`/item?id=${item.id}` as any)}
+                  activeOpacity={0.8}
+                >
+                  {item.image_url ? (
+                    <Image source={{ uri: item.image_url }} style={styles.featuredImage} />
+                  ) : (
+                    <View style={[styles.featuredImage, styles.placeholderImage]}>
+                      <Text style={styles.placeholderText}>No Image</Text>
+                    </View>
+                  )}
+                  <Text style={styles.featuredLabel} numberOfLines={1}>
+                    {item.featured_title || item.name}
+                  </Text>
+                  <Text style={styles.featuredPrice}>R{item.price.toFixed(2)}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        )}
 
         {/* Categories */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoriesContainer}>
@@ -228,6 +258,55 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 14,
     fontSize: 16,
+  },
+  featuredSection: {
+    marginBottom: 24,
+  },
+  featuredSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 12,
+  },
+  featuredScroll: {
+    marginHorizontal: -4,
+  },
+  featuredCard: {
+    width: 140,
+    marginRight: 12,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    overflow: 'hidden',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  featuredImage: {
+    width: 140,
+    height: 100,
+    resizeMode: 'cover',
+  },
+  featuredLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    paddingHorizontal: 8,
+    paddingTop: 6,
+  },
+  featuredPrice: {
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#FF6B2C',
+    paddingHorizontal: 8,
+    paddingBottom: 8,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 12,
   },
   categoriesContainer: {
     marginBottom: 24,
