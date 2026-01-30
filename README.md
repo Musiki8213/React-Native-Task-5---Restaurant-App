@@ -160,34 +160,4 @@ For testing payment functionality, you can use test card numbers from [vccgenera
 6. Place an order
 7. View order history
 
-## Admin Access
 
-To access the admin dashboard:
-1. Navigate to `/admin` route
-2. Admin functionality requires `is_admin` flag in profiles table (can be set manually in Supabase)
-
-## Future Enhancements
-
-- [ ] Social login (Google, Apple, Facebook)
-- [ ] Payment integration (Stripe/PayPal)
-- [ ] Push notifications
-- [ ] Real-time order tracking
-- [ ] Advanced admin analytics with charts
-- [ ] Food item CRUD operations in admin panel
-- [ ] Search functionality
-- [ ] Favorites/Wishlist
-
-## License
-
-This project is created for educational purposes.
-
-## Submission
-
-- **Design (Figma)**: [Task 4 React Native | Restaurant App](https://www.figma.com/design/7ZIf4538aPzLMJQz82od2P/Task4-React-Native%7C-Restaurant-App?node-id=3-36&t=D1ASR63LK1hkGx6m-1)
-- **Repository**: [Add your repository link here]
-- **Hosted CMS**: The live CMS link is under **Deployments** in this repository on GitHub.
-- **Demo Video**: [Add your demo video link here]
-
-## Contact
-
-For questions or issues, please refer to the task requirements or contact your instructor.
