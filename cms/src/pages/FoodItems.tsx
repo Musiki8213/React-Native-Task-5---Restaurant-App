@@ -130,6 +130,9 @@ export default function FoodItems() {
                   <div className="food-item-header">
                     <h3>{item.name}</h3>
                     <span className="food-item-category">{getCategoryName(item)}</span>
+                    {item.is_featured && (
+                      <span className="food-item-featured-badge">Featured</span>
+                    )}
                   </div>
                   <p className="food-item-description">{item.description}</p>
                   <div className="food-item-footer">

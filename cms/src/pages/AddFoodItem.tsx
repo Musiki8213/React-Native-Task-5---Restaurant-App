@@ -18,6 +18,9 @@ export default function AddFoodItem() {
     description: '',
     price: '',
     category_id: '',
+    is_featured: false,
+    featured_title: '',
+    featured_order: '',
   })
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
@@ -58,6 +61,9 @@ export default function AddFoodItem() {
           description: data.description || '',
           price: data.price?.toString() || '',
           category_id: data.category_id || '',
+          is_featured: !!data.is_featured,
+          featured_title: data.featured_title || '',
+          featured_order: data.featured_order != null ? String(data.featured_order) : '',
         })
         if (data.image_url) {
           setExistingImageUrl(data.image_url)
@@ -124,8 +130,9 @@ export default function AddFoodItem() {
         imageUrl = urlData.publicUrl
       }
 
+      const featuredOrderNum = formData.featured_order.trim() ? parseInt(formData.featured_order, 10) : null
+
       if (isEditMode && itemId) {
-        // Update existing food item
         const { error: updateError } = await supabase
           .from('food_items')
           .update({
@@ -134,7 +141,9 @@ export default function AddFoodItem() {
             price: parseFloat(formData.price),
             image_url: imageUrl,
             category_id: formData.category_id,
-            updated_at: new Date().toISOString(),
+            is_featured: formData.is_featured,
+            featured_title: formData.featured_title.trim() || null,
+            featured_order: Number.isInteger(featuredOrderNum) ? featuredOrderNum : null,
           })
           .eq('id', itemId)
 
@@ -142,13 +151,15 @@ export default function AddFoodItem() {
           throw updateError
         }
       } else {
-        // Insert new food item
         const { error: insertError } = await supabase.from('food_items').insert({
           name: formData.name,
           description: formData.description,
           price: parseFloat(formData.price),
           image_url: imageUrl,
           category_id: formData.category_id,
+          is_featured: formData.is_featured,
+          featured_title: formData.featured_title.trim() || null,
+          featured_order: Number.isInteger(featuredOrderNum) ? featuredOrderNum : null,
         })
 
         if (insertError) {
@@ -234,6 +245,39 @@ export default function AddFoodItem() {
                 ))}
               </select>
             </div>
+          </div>
+
+          <div className="form-group featured-section">
+            <h3 className="section-label">Featured</h3>
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                checked={formData.is_featured}
+                onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
+              />
+              Show as featured on Home screen
+            </label>
+            {formData.is_featured && (
+              <>
+                <label htmlFor="featured_title">Featured display name (e.g. Chef&apos;s Special)</label>
+                <input
+                  id="featured_title"
+                  type="text"
+                  value={formData.featured_title}
+                  onChange={(e) => setFormData({ ...formData, featured_title: e.target.value })}
+                  placeholder="Optional custom label"
+                />
+                <label htmlFor="featured_order">Featured order (priority, lower = first)</label>
+                <input
+                  id="featured_order"
+                  type="number"
+                  min="0"
+                  value={formData.featured_order}
+                  onChange={(e) => setFormData({ ...formData, featured_order: e.target.value })}
+                  placeholder="0"
+                />
+              </>
+            )}
           </div>
 
           <div className="form-group">

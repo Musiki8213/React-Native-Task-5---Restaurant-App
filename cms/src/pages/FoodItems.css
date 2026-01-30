@@ -171,6 +171,16 @@
   margin-left: 8px;
 }
 
+.food-item-featured-badge {
+  background: #10b981;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-left: 6px;
+}
+
 .food-item-description {
   color: #000000;
   font-size: 14px;

@@ -37,6 +37,33 @@
   font-size: 24px;
 }
 
+.featured-section {
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+  background: #fafafa;
+}
+
+.featured-section .section-label {
+  margin: 0 0 12px 0;
+  font-size: 16px;
+  color: #000;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+}
+
 .form-container {
   max-width: 800px;
   margin: 32px auto;
