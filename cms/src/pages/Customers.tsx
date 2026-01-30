@@ -5,12 +5,14 @@ import './Customers.css'
 
 interface CustomerProfile {
   id: string
-  name: string | null
-  contact: string | null
+  full_name: string | null
+  name?: string | null
+  phone: string | null
+  contact?: string | null
   address: string | null
   email: string | null
   created_at: string
-  disabled_flag: boolean | null
+  is_active: boolean | null
 }
 
 export default function Customers() {
@@ -27,7 +29,7 @@ export default function Customers() {
       setError(null)
       const { data, error: fetchError } = await supabase
         .from('profiles')
-        .select('id, name, contact, address, email, created_at, disabled_flag')
+        .select('id, full_name, name, phone, contact, address, email, created_at, is_active')
         .order('created_at', { ascending: false })
 
       if (fetchError) throw fetchError
@@ -43,13 +45,13 @@ export default function Customers() {
     loadCustomers()
   }, [loadCustomers])
 
-  const handleToggleFlag = async (id: string, current: boolean | null) => {
+  const handleToggleActive = async (id: string, current: boolean | null) => {
     try {
       setUpdatingId(id)
-      const next = !current
+      const next = current === false
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ disabled_flag: next, updated_at: new Date().toISOString() })
+        .update({ is_active: next })
         .eq('id', id)
       if (updateError) throw updateError
       await loadCustomers()
@@ -111,16 +113,16 @@ export default function Customers() {
                 </thead>
                 <tbody>
                   {customers.map((c) => (
-                    <tr key={c.id} className={c.disabled_flag ? 'row-disabled' : ''}>
-                      <td className="name-cell">{c.name ?? '—'}</td>
+                    <tr key={c.id} className={c.is_active === false ? 'row-disabled' : ''}>
+                      <td className="name-cell">{c.full_name ?? c.name ?? '—'}</td>
                       <td className="email-cell">{c.email ?? '—'}</td>
-                      <td>{c.contact ?? '—'}</td>
+                      <td>{c.phone ?? c.contact ?? '—'}</td>
                       <td className="date-cell">{formatDate(c.created_at)}</td>
                       <td>
-                        {c.disabled_flag ? (
-                          <span className="status-badge status-flagged">Flagged</span>
-                        ) : (
+                        {c.is_active !== false ? (
                           <span className="status-badge status-active">Active</span>
+                        ) : (
+                          <span className="status-badge status-flagged">Disabled</span>
                         )}
                       </td>
                       <td>
@@ -135,10 +137,10 @@ export default function Customers() {
                           type="button"
                           className="flag-button"
                           disabled={updatingId === c.id}
-                          onClick={() => handleToggleFlag(c.id, c.disabled_flag ?? false)}
-                          title={c.disabled_flag ? 'Clear flag' : 'Flag / Disable'}
+                          onClick={() => handleToggleActive(c.id, c.is_active ?? true)}
+                          title={c.is_active === false ? 'Enable customer' : 'Disable customer'}
                         >
-                          {updatingId === c.id ? '…' : c.disabled_flag ? 'Clear flag' : 'Flag'}
+                          {updatingId === c.id ? '…' : c.is_active === false ? 'Enable' : 'Disable'}
                         </button>
                       </td>
                     </tr>
@@ -152,8 +154,8 @@ export default function Customers() {
                 <h3>Customer profile</h3>
                 <div className="profile-detail-grid">
                   <div className="detail-row">
-                    <span className="detail-label">Name</span>
-                    <span className="detail-value">{selectedCustomer.name ?? '—'}</span>
+                    <span className="detail-label">Full name</span>
+                    <span className="detail-value">{selectedCustomer.full_name ?? selectedCustomer.name ?? '—'}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Email</span>
@@ -161,7 +163,7 @@ export default function Customers() {
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Phone</span>
-                    <span className="detail-value">{selectedCustomer.contact ?? '—'}</span>
+                    <span className="detail-value">{selectedCustomer.phone ?? selectedCustomer.contact ?? '—'}</span>
                   </div>
                   <div className="detail-row">
                     <span className="detail-label">Address</span>
@@ -174,7 +176,7 @@ export default function Customers() {
                   <div className="detail-row">
                     <span className="detail-label">Status</span>
                     <span className="detail-value">
-                      {selectedCustomer.disabled_flag ? 'Flagged / Disabled' : 'Active'}
+                      {selectedCustomer.is_active === false ? 'Disabled' : 'Active'}
                     </span>
                   </div>
                 </div>
