@@ -1,3 +1,4 @@
+import { useRegistration } from '@/contexts/RegistrationContext'
 import { supabase } from '@/lib/supabase'
 import { Ionicons } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
@@ -16,12 +17,11 @@ import {
 export default function RegisterStep3() {
   const router = useRouter()
   const params = useLocalSearchParams()
+  const { data: regData, clearRegistration } = useRegistration()
 
-  const email = String(params.email || '')
-  const password = String(params.password || '')
-  const name = String(params.name || '')
-  const contact = String(params.contact || '')
-  const address = String(params.address || '')
+  const full_name = regData.full_name || String(params.full_name || '')
+  const phone = regData.phone || String(params.phone || '')
+  const address = regData.address || String(params.address || '')
 
   const [cardName, setCardName] = useState('')
   const [cardNumber, setCardNumber] = useState('')
@@ -47,161 +47,45 @@ export default function RegisterStep3() {
       return
     }
 
-    if (!email || !password) {
-      setError('Registration session expired. Please restart registration.')
-      return
-    }
-
     setLoading(true)
     setError(null)
 
-    const { data, error: authError } = await supabase.auth.signUp({
-      email,
-      password,
-    })
-
-    if (authError) {
-      const errorMessage = authError.message.toLowerCase()
-      if (errorMessage.includes('password') || errorMessage.includes('weak') || errorMessage.includes('invalid') || errorMessage.includes('too short') || errorMessage.includes('too long')) {
-        router.replace({
-          pathname: '/(auth)/register/step1' as any,
-          params: {
-            error: 'Password validation failed. Please check your password requirements.',
-            email: email,
-          },
-        })
-        return
-      } else {
-        setError(`Unable to create account: ${authError.message}`)
-      }
+    const { data: { user }, error: userError } = await supabase.auth.getUser()
+    if (userError || !user) {
+      setError('Session expired. Please sign in again from the login screen.')
       setLoading(false)
       return
     }
 
-    const userId = data.user?.id
-    if (!userId) {
-      setError('Account creation failed')
-      setLoading(false)
-      return
-    }
-
-    const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({ 
-      email, 
-      password 
-    })
-
-    if (signInError) {
-      const errorMessage = signInError.message.toLowerCase()
-      if (errorMessage.includes('password') || errorMessage.includes('invalid') || errorMessage.includes('credentials')) {
-        router.replace({
-          pathname: '/(auth)/register/step1' as any,
-          params: {
-            error: 'Password validation failed. Please check your password and try again.',
-            email: email,
-          },
-        })
-        return
-      } else {
-        setError(`Sign in failed: ${signInError.message}`)
-      }
-      setLoading(false)
-      return
-    }
-
-    if (!signInData.session) {
-      setError('Session not established. Please try again.')
-      setLoading(false)
-      return
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 1500))
-
-    const { data: { session: currentSession } } = await supabase.auth.getSession()
-    if (!currentSession) {
-      setError('Session not established. Please try logging in again.')
-      setLoading(false)
-      return
-    }
-
-    const authenticatedUserId = currentSession.user.id
-    if (authenticatedUserId !== userId) {
-      setError('User ID mismatch. Please try again.')
-      setLoading(false)
-      return
-    }
-
-    // Ensure profile exists and update it with all registration data
-    // First, try to upsert (insert or update) the profile
-    const { data: profileData, error: profileError } = await supabase
+    const nameVal = full_name || null
+    const phoneVal = phone || null
+    const { error: updateError } = await supabase
       .from('profiles')
-      .upsert({
-        id: authenticatedUserId,
-        name,
-        contact,
-        address,
-        card_name: cardName,
-        card_number: cardNumber,
-        card_expiry: expiry,
-        card_cvc: cvc,
-      }, {
-        onConflict: 'id'
+      .update({
+        email: user.email ?? null,
+        full_name: nameVal,
+        name: nameVal,
+        phone: phoneVal,
+        contact: phoneVal,
+        address: address || null,
+        card_name: cardName || null,
+        card_number: cardNumber || null,
+        card_expiry: expiry || null,
+        card_cvc: cvc || null,
       })
-      .select()
-      .single()
+      .eq('id', user.id)
 
-    if (profileError) {
-      console.error('Profile error:', profileError)
-      
-      const { data: updateData, error: updateError } = await supabase
-        .from('profiles')
-        .update({
-          name,
-          contact,
-          address,
-          card_name: cardName,
-          card_number: cardNumber,
-          card_expiry: expiry,
-          card_cvc: cvc,
-        })
-        .eq('id', authenticatedUserId)
-        .select()
-        .single()
-
-      if (updateError) {
-        const { data: insertData, error: insertError } = await supabase
-          .from('profiles')
-          .insert({
-            id: authenticatedUserId,
-            name,
-            contact,
-            address,
-            card_name: cardName,
-            card_number: cardNumber,
-            card_expiry: expiry,
-            card_cvc: cvc,
-          })
-          .select()
-          .single()
-
-        if (insertError) {
-          if (insertError.code === '42501' || insertError.message.includes('row-level security')) {
-            console.error('RLS Policy Error:', insertError)
-            setError('Database security error. Please run the SQL script in fix-rls-policy.sql in your Supabase SQL Editor.')
-          } else {
-            setError(`Failed to save profile: ${insertError.message}`)
-          }
-          setLoading(false)
-          return
-        } else {
-          console.log('Profile created successfully:', insertData)
-        }
+    if (updateError) {
+      if (updateError.code === '42501' || updateError.message.includes('row-level security')) {
+        setError('Database security error. Please run supabase-profiles-auth-trigger.sql in your Supabase SQL Editor.')
       } else {
-        console.log('Profile updated successfully:', updateData)
+        setError(`Failed to update profile: ${updateError.message}`)
       }
-    } else {
-      console.log('Profile saved successfully:', profileData)
+      setLoading(false)
+      return
     }
 
+    clearRegistration()
     await new Promise(resolve => setTimeout(resolve, 500))
     router.replace('/(tabs)/' as any)
   }

@@ -1,3 +1,4 @@
+import { useRegistration } from '@/contexts/RegistrationContext'
 import { Ionicons } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
@@ -6,6 +7,7 @@ import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View 
 export default function RegisterStep1() {
   const router = useRouter()
   const params = useLocalSearchParams()
+  const { setEmailPassword } = useRegistration()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -25,7 +27,6 @@ export default function RegisterStep1() {
   }, [params.error, params.email])
 
   const handleNext = () => {
-    // Clear previous errors
     setError(null)
 
     if (!email || !password || !confirmPassword) {
@@ -33,14 +34,12 @@ export default function RegisterStep1() {
       return
     }
 
-    // STRICT email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
     if (!emailRegex.test(email.trim())) {
       setError('Please enter a valid email address')
       return
     }
 
-    // Comprehensive password validation
     if (password.length < 6) {
       setError('Password must be at least 6 characters')
       return
@@ -51,17 +50,14 @@ export default function RegisterStep1() {
       return
     }
 
-    // Check for common weak passwords
     const weakPasswords = ['password', '123456', 'qwerty', 'abc123']
     if (weakPasswords.includes(password.toLowerCase())) {
       setError('Password is too weak. Please choose a stronger password')
       return
     }
 
-    // Check if password contains at least one letter and one number (recommended)
     const hasLetter = /[a-zA-Z]/.test(password)
     const hasNumber = /[0-9]/.test(password)
-    
     if (!hasLetter || !hasNumber) {
       setError('Password should contain both letters and numbers')
       return
@@ -72,14 +68,8 @@ export default function RegisterStep1() {
       return
     }
 
-    // All validations passed
-    router.push({
-      pathname: '/(auth)/register/step2' as any,
-      params: {
-        email: email.trim().toLowerCase(),
-        password,
-      },
-    })
+    setEmailPassword(email.trim().toLowerCase(), password)
+    router.push('/(auth)/register/step2' as any)
   }
 
   return (

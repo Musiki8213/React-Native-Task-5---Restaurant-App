@@ -1,38 +1,87 @@
+import { useRegistration } from '@/contexts/RegistrationContext'
+import { supabase } from '@/lib/supabase'
 import { Ionicons } from '@expo/vector-icons'
-import { useLocalSearchParams, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { useState } from 'react'
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 export default function RegisterStep2() {
   const router = useRouter()
-  const { email, password } = useLocalSearchParams<{
-    email: string
-    password: string
-  }>()
+  const { data: regData, setProfileDetails } = useRegistration()
 
-  const [name, setName] = useState('')
-  const [contact, setContact] = useState('')
+  const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
   const [address, setAddress] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const handleNext = () => {
-    if (!name || !contact || !address) {
+  const handleNext = async () => {
+    if (!fullName.trim() || !phone.trim() || !address.trim()) {
       setError('Please fill in all fields')
       return
     }
 
-    setError(null)
+    const email = regData.email || ''
+    const password = regData.password || ''
+    if (!email || !password) {
+      setError('Session expired. Please go back and enter your email and password again.')
+      return
+    }
 
-    router.push({
-      pathname: '/(auth)/register/step3' as any,
-      params: {
-        email,
-        password,
-        name,
-        contact,
-        address,
-      },
-    })
+    setError(null)
+    setLoading(true)
+
+    let user = (await supabase.auth.getUser()).data?.user
+    if (!user) {
+      const { data, error: authError } = await supabase.auth.signUp({ email, password })
+      if (authError) {
+        setError(authError.message)
+        setLoading(false)
+        return
+      }
+      if (!data.user?.id) {
+        setError('Account creation failed')
+        setLoading(false)
+        return
+      }
+      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+      if (signInError) {
+        setError(signInError.message)
+        setLoading(false)
+        return
+      }
+      user = (await supabase.auth.getUser()).data?.user
+    }
+
+    if (!user) {
+      setError('Session not established. Please try again.')
+      setLoading(false)
+      return
+    }
+
+    const nameVal = fullName.trim() || null
+    const phoneVal = phone.trim() || null
+    const { error: updateError } = await supabase
+      .from('profiles')
+      .update({
+        email: user.email ?? null,
+        full_name: nameVal,
+        name: nameVal,
+        phone: phoneVal,
+        contact: phoneVal,
+        address: address.trim() || null,
+      })
+      .eq('id', user.id)
+
+    if (updateError) {
+      setError(updateError.message || 'Failed to update profile')
+      setLoading(false)
+      return
+    }
+
+    setProfileDetails(fullName.trim(), phone.trim(), address.trim())
+    setLoading(false)
+    router.push('/(auth)/register/step3' as any)
   }
 
   return (
@@ -56,18 +105,18 @@ export default function RegisterStep2() {
       <TextInput
         placeholder="Full Name"
         placeholderTextColor="#999"
-        value={name}
-        onChangeText={setName}
+        value={fullName}
+        onChangeText={setFullName}
         style={styles.input}
       />
 
-      <Text style={styles.label}>Contact number</Text>
+      <Text style={styles.label}>Phone</Text>
       <TextInput
-        placeholder="Contact number"
+        placeholder="Phone number"
         placeholderTextColor="#999"
         keyboardType="phone-pad"
-        value={contact}
-        onChangeText={setContact}
+        value={phone}
+        onChangeText={setPhone}
         style={styles.input}
       />
 
@@ -82,8 +131,8 @@ export default function RegisterStep2() {
 
       {error && <Text style={styles.error}>{error}</Text>}
 
-      <TouchableOpacity style={styles.button} onPress={handleNext}>
-        <Text style={styles.buttonText}>Next</Text>
+      <TouchableOpacity style={styles.button} onPress={handleNext} disabled={loading}>
+        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Next</Text>}
       </TouchableOpacity>
 
       <View style={styles.footer}>
