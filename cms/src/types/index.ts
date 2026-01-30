@@ -12,6 +12,9 @@ export interface FoodItem {
   category_id: string
   created_at?: string
   updated_at?: string
+  is_featured?: boolean
+  featured_title?: string | null
+  featured_order?: number | null
   categories?: {
     name: string
   }
