@@ -1,6 +1,45 @@
-# Click n' Dine - React Native Restaurant App
+# Click n' Dine – React Native Restaurant App
 
-A comprehensive React Native restaurant application built with Expo, featuring user authentication, menu browsing, cart management, order placement, and an admin dashboard.
+A React Native restaurant app (Expo) with user auth, menu browsing, cart, checkout, orders, and profile. Includes a **web CMS** for managing food items, orders, and customers.
+
+---
+
+## Design (Figma)
+
+**[Figma – Task 4 React Native | Restaurant App](https://www.figma.com/design/7ZIf4538aPzLMJQz82od2P/Task4-React-Native%7C-Restaurant-App?node-id=3-36&t=D1ASR63LK1hkGx6m-1)**
+
+---
+
+## How to run
+
+### Mobile app (Expo)
+
+From the **project root**:
+
+```bash
+npm install
+npm start
+```
+
+Then press `w` (web), `a` (Android), or `i` (iOS). Configure **`lib/supabase.ts`** with your Supabase URL and anon key, and run the SQL scripts in Supabase (see [DOCUMENTATION.md](./DOCUMENTATION.md)).
+
+### CMS (web admin)
+
+From the **`cms`** folder:
+
+```bash
+cd cms
+npm install
+npm run dev
+```
+
+Open the URL shown (e.g. `http://localhost:5173`). Use the same Supabase project; set **`cms/src/lib/supabase.ts`** and ensure an admin user exists in the `profiles` table.
+
+**Host the CMS on Vercel:** See [DOCUMENTATION.md](./DOCUMENTATION.md#hosting-the-cms-on-vercel) for step-by-step deployment (root directory: `cms`, optional env vars: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`).
+
+**Full setup and details:** [DOCUMENTATION.md](./DOCUMENTATION.md)
+
+---
 
 ## Features
 
@@ -102,11 +141,10 @@ RestaurantApp/
 
 ## Design
 
-The app follows the UI design provided in the task requirements with:
-- Orange accent color (#F97316) for primary actions
+The app follows the [Figma design](https://www.figma.com/design/7ZIf4538aPzLMJQz82od2P/Task4-React-Native%7C-Restaurant-App?node-id=3-36&t=D1ASR63LK1hkGx6m-1) with:
+- Orange accent (#FF6B2C / #F97316) for primary actions
 - Clean, modern interface
-- Consistent navigation patterns
-- Responsive layouts
+- Consistent navigation and responsive layouts
 
 ## Testing
 
@@ -145,7 +183,7 @@ This project is created for educational purposes.
 
 ## Submission
 
-- **Design Link**: [Add your design link here]
+- **Design (Figma)**: [Task 4 React Native | Restaurant App](https://www.figma.com/design/7ZIf4538aPzLMJQz82od2P/Task4-React-Native%7C-Restaurant-App?node-id=3-36&t=D1ASR63LK1hkGx6m-1)
 - **Repository**: [Add your repository link here]
 - **Demo Video**: [Add your demo video link here]
 
