@@ -123,12 +123,6 @@ Then open the URL shown in the terminal (e.g. `http://localhost:5173`).
 - The CMS uses **Supabase Auth**: log in with an account that has **`is_admin = true`** in the **profiles** table.
 - To give a user admin rights: **Supabase** → **Table Editor** → **profiles** → find the user row → set **`is_admin`** to **`true`** → Save.
 
-**Admin credentials (this repo is private):**
-
-| Field    | Value                        |
-|---------|------------------------------|
-| Email   | sithomolamusiki@gmail.com    |
-| Password| Mlab@1234                    |
 
 ### CMS scripts (from `cms/`)
 
