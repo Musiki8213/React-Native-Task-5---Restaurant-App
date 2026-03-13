@@ -13,6 +13,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function ItemDetailScreen() {
   const router = useRouter()
@@ -34,10 +35,11 @@ export default function ItemDetailScreen() {
     }
   }, [item])
   const [quantity, setQuantity] = useState(1)
+  const insets = useSafeAreaInsets()
 
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
         <ActivityIndicator size="large" color="#FF6B2C" />
         <Text style={styles.loadingText}>Loading...</Text>
       </View>
@@ -46,7 +48,7 @@ export default function ItemDetailScreen() {
 
   if (!item) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, styles.loadingContainer, { paddingTop: insets.top }]}>
         <Text style={styles.errorText}>Item not found</Text>
       </View>
     )
@@ -118,7 +120,11 @@ export default function ItemDetailScreen() {
 
   return (
     <View style={styles.wrapper}>
-      <ScrollView style={styles.container}>
+      <ScrollView
+        style={[styles.container, { paddingTop: insets.top }]}
+        contentContainerStyle={{ paddingBottom: 120 + insets.bottom }}
+        showsVerticalScrollIndicator={true}
+      >
         <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
@@ -223,22 +229,27 @@ export default function ItemDetailScreen() {
           </View>
         )}
 
-        {/* Quantity */}
+        {/* Quantity & Add to Cart */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Quantity</Text>
-          <View style={styles.quantityContainer}>
-            <TouchableOpacity
-              style={styles.quantityButton}
-              onPress={() => setQuantity(Math.max(1, quantity - 1))}
-            >
-              <Text style={styles.quantityButtonText}>-</Text>
-            </TouchableOpacity>
-            <Text style={styles.quantityText}>{quantity}</Text>
-            <TouchableOpacity
-              style={styles.quantityButton}
-              onPress={() => setQuantity(quantity + 1)}
-            >
-              <Text style={styles.quantityButtonText}>+</Text>
+          <View style={styles.quantityRow}>
+            <View style={styles.quantityContainer}>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={() => setQuantity(Math.max(1, quantity - 1))}
+              >
+                <Text style={styles.quantityButtonText}>-</Text>
+              </TouchableOpacity>
+              <Text style={styles.quantityText}>{quantity}</Text>
+              <TouchableOpacity
+                style={styles.quantityButton}
+                onPress={() => setQuantity(quantity + 1)}
+              >
+                <Text style={styles.quantityButtonText}>+</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.addButtonSmall} onPress={handleAddToCart}>
+              <Text style={styles.addButtonSmallText}>Add to Cart</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -248,10 +259,6 @@ export default function ItemDetailScreen() {
           <Text style={styles.totalLabel}>Total:</Text>
           <Text style={styles.totalPrice}>R{calculateTotal().toFixed(2)}</Text>
         </View>
-
-        <TouchableOpacity style={styles.addButton} onPress={handleAddToCart}>
-          <Text style={styles.addButtonText}>Add to Cart</Text>
-        </TouchableOpacity>
       </View>
       </ScrollView>
       <TabBar />
@@ -267,7 +274,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingBottom: 80, // Space for floating tab bar
+  },
+  loadingContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   header: {
     flexDirection: 'row',
@@ -275,7 +285,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    paddingTop: 50,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
@@ -355,10 +364,16 @@ const styles = StyleSheet.create({
     color: '#FF6B2C',
     fontWeight: '600',
   },
+  quantityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
   quantityContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
   },
   quantityButton: {
     width: 40,
@@ -398,17 +413,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#FF6B2C',
   },
-  addButton: {
+  addButtonSmall: {
     backgroundColor: '#FF6B2C',
-    padding: 16,
-    borderRadius: 12,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 32,
+    justifyContent: 'center',
   },
-  addButtonText: {
+  addButtonSmallText: {
     color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '600',
   },
   loadingText: {
     marginTop: 12,

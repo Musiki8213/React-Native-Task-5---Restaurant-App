@@ -3,6 +3,7 @@ import { RegistrationProvider } from '@/contexts/RegistrationContext'
 import { supabase } from '@/lib/supabase'
 import { Stack, useRouter, useSegments } from 'expo-router'
 import { useEffect, useState } from 'react'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 function useProtectedRoute() {
   const segments = useSegments()
@@ -44,9 +45,10 @@ export default function RootLayout() {
   useProtectedRoute()
 
   return (
-    <CartProvider>
-      <RegistrationProvider>
-        <Stack screenOptions={{ headerShown: false }}>
+    <SafeAreaProvider>
+      <CartProvider>
+        <RegistrationProvider>
+          <Stack screenOptions={{ headerShown: false }}>
         {/* Landing page */}
         <Stack.Screen name="index" />
 
@@ -63,7 +65,8 @@ export default function RootLayout() {
         <Stack.Screen name="checkout" />
         <Stack.Screen name="admin" />
       </Stack>
-      </RegistrationProvider>
-    </CartProvider>
+        </RegistrationProvider>
+      </CartProvider>
+    </SafeAreaProvider>
   )
 }

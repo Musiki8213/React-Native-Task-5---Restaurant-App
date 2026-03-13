@@ -1,29 +1,18 @@
 import TabBar from '@/components/TabBar'
-import { useCart } from '@/contexts/CartContext'
 import { useFoodItems } from '@/hooks/useFoodItems'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function StarterPage() {
   const router = useRouter()
-  const { addItem } = useCart()
   const { getItemsByCategory, loading } = useFoodItems()
   const items = getItemsByCategory('starters')
-
-  const handleAddToCart = (item: any) => {
-    addItem({
-      id: item.id,
-      name: item.name,
-      description: item.description,
-      price: item.price,
-      image_url: item.image_url,
-      quantity: 1,
-    })
-  }
+  const insets = useSafeAreaInsets()
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: 80 + insets.bottom }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
@@ -47,7 +36,11 @@ export default function StarterPage() {
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.card}
+              activeOpacity={0.8}
+              onPress={() => router.push(`/item?id=${item.id}` as any)}
+            >
               {item.image_url ? (
                 <Image source={{ uri: item.image_url }} style={styles.image} />
               ) : (
@@ -55,22 +48,16 @@ export default function StarterPage() {
                   <Text style={styles.placeholderText}>No Image</Text>
                 </View>
               )}
-            <View style={styles.textContainer}>
-              <Text style={styles.name}>{item.name}</Text>
-              <Text style={styles.description}>{item.description}</Text>
-              <View style={styles.footer}>
-                <Text style={styles.price}>R{item.price.toFixed(2)}</Text>
-                <TouchableOpacity
-                  style={styles.addButton}
-                  onPress={() => handleAddToCart(item)}
-                >
-                  <Text style={styles.addButtonText}>Add to cart</Text>
-                </TouchableOpacity>
+              <View style={styles.textContainer}>
+                <Text style={styles.name}>{item.name}</Text>
+                <Text style={styles.description}>{item.description}</Text>
+                <View style={styles.footer}>
+                  <Text style={styles.price}>R{item.price.toFixed(2)}</Text>
+                </View>
               </View>
-            </View>
-          </View>
-            )}
-          />
+            </TouchableOpacity>
+          )}
+        />
         )}
       <TabBar />
     </View>
@@ -81,8 +68,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 50,
-    paddingBottom: 80, // Space for floating tab bar
   },
   header: {
     flexDirection: 'row',

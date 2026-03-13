@@ -8,6 +8,7 @@ import * as WebBrowser from 'expo-web-browser'
 import { useEffect, useState } from 'react'
 import {
   Alert,
+  KeyboardAvoidingView,
   Modal,
   Platform,
   ScrollView,
@@ -17,6 +18,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 let Paystack: any = null
 if (Platform.OS !== 'web') {
@@ -349,10 +351,22 @@ export default function CheckoutScreen() {
     setAuthorizationUrl(null)
   }
 
+  const insets = useSafeAreaInsets()
+
   return (
     <View style={styles.wrapper}>
-      <ScrollView style={styles.container}>
-      <View style={styles.header}>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+      <View style={[styles.header, { paddingTop: Math.max(insets.top, 16) }]}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
         </TouchableOpacity>
@@ -425,6 +439,7 @@ export default function CheckoutScreen() {
         </TouchableOpacity>
       </View>
       </ScrollView>
+      </KeyboardAvoidingView>
       <TabBar />
 
       {/* Paystack Payment Modal - Native only */}
@@ -436,7 +451,7 @@ export default function CheckoutScreen() {
           transparent={false}
         >
           <View style={{ flex: 1, backgroundColor: '#fff' }}>
-            <View style={{ padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eee', paddingTop: 50 }}>
+            <View style={{ padding: 16, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#eee', paddingTop: insets.top + 16 }}>
               <Text style={{ fontSize: 18, fontWeight: 'bold' }}>Complete Payment</Text>
               <TouchableOpacity onPress={handlePaymentClose}>
                 <Ionicons name="close" size={28} color="#666" />
@@ -477,10 +492,15 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  keyboardAvoid: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingBottom: 80,
+  },
+  scrollContent: {
+    paddingBottom: 100,
   },
   header: {
     flexDirection: 'row',
@@ -488,7 +508,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingVertical: 16,
-    paddingTop: 50,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },

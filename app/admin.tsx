@@ -11,6 +11,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -169,8 +170,10 @@ export default function AdminDashboard() {
     </View>
   )
 
+  const insets = useSafeAreaInsets()
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
@@ -219,7 +222,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 50,
   },
   header: {
     flexDirection: 'row',

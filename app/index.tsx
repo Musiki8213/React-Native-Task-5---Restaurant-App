@@ -2,9 +2,11 @@ import { supabase } from '@/lib/supabase'
 import { useRouter } from 'expo-router'
 import { useEffect } from 'react'
 import { Image, ImageBackground, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function LandingPage() {
   const router = useRouter()
+  const insets = useSafeAreaInsets()
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -18,9 +20,8 @@ export default function LandingPage() {
     <ImageBackground
       source={require('../assets/landing.png')}
       style={styles.imageBackground}
-     
     >
-      <View style={styles.overlay}>
+      <View style={[styles.overlay, { paddingTop: insets.top + 20, paddingBottom: insets.bottom + 30 }]}>
         <View style={styles.logoContainer}>
           <Image 
             source={require('../assets/logo-white.png')} 
@@ -59,8 +60,6 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     justifyContent: 'space-between',
-    paddingTop: 20,
-    paddingBottom: 30,
     paddingHorizontal: 24,
   },
   logoContainer: {
