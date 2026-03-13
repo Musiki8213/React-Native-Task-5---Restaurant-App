@@ -35,7 +35,7 @@ npm run dev
 
 Open the URL shown (e.g. `http://localhost:5173`). Use the same Supabase project; set **`cms/src/lib/supabase.ts`** and ensure an admin user exists in the `profiles` table.
 
-**Hosted CMS :** [CMS](https://react-native-task-5-restaurant-app-rpoa-a5sv2etks.vercel.app)
+**Hosted CMS :** [CMS](https://react-native-task-5-restaurant-app-mauve.vercel.app/)
 
 **Full setup and details:** [DOCUMENTATION.md](./DOCUMENTATION.md)
 
