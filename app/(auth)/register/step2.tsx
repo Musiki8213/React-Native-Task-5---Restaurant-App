@@ -3,7 +3,8 @@ import { supabase } from '@/lib/supabase'
 import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import { useState } from 'react'
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function RegisterStep2() {
   const router = useRouter()
@@ -35,8 +36,19 @@ export default function RegisterStep2() {
     if (!user) {
       const { data, error: authError } = await supabase.auth.signUp({ email, password })
       if (authError) {
-        setError(authError.message)
         setLoading(false)
+        // Password rules are validated by Supabase at signUp; show the error on step 1 where the user can fix it
+        const isPasswordError =
+          /password|too weak|security requirement|at least one character/i.test(authError.message) ||
+          authError.message?.includes('abcdefghijklmnopqrstuvwxyz')
+        if (isPasswordError) {
+          router.replace({
+            pathname: '/(auth)/register/step1',
+            params: { error: authError.message, email },
+          } as any)
+          return
+        }
+        setError(authError.message)
         return
       }
       if (!data.user?.id) {
@@ -44,13 +56,27 @@ export default function RegisterStep2() {
         setLoading(false)
         return
       }
-      const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
-      if (signInError) {
-        setError(signInError.message)
-        setLoading(false)
-        return
+      // Use session from signUp if present (when email confirmation is disabled); otherwise sign in
+      if (data.session) {
+        user = data.user
+      } else {
+        const { error: signInError } = await supabase.auth.signInWithPassword({ email, password })
+        if (signInError) {
+          setLoading(false)
+          const msg = signInError.message || ''
+          const isUnconfirmed =
+            /invalid login|invalid_grant|email not confirmed|confirm your email/i.test(msg)
+          if (isUnconfirmed) {
+            setError(
+              'Please check your email and confirm your account using the link we sent.'
+            )
+          } else {
+            setError(signInError.message)
+          }
+          return
+        }
+        user = (await supabase.auth.getUser()).data?.user
       }
-      user = (await supabase.auth.getUser()).data?.user
     }
 
     if (!user) {
@@ -84,8 +110,19 @@ export default function RegisterStep2() {
     router.push('/(auth)/register/step3' as any)
   }
 
+  const insets = useSafeAreaInsets()
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.keyboardAvoid}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView
+        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 24), paddingBottom: insets.bottom + 24 }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="chevron-back" size={24} color="#000" />
       </TouchableOpacity>
@@ -142,15 +179,19 @@ export default function RegisterStep2() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoid: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flexGrow: 1,
     padding: 24,
     backgroundColor: '#fff',
-    paddingTop: 60,
   },
   backButton: {
     marginBottom: 20,

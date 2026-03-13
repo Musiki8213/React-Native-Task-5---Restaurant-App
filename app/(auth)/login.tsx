@@ -3,7 +3,8 @@ import { Ionicons } from '@expo/vector-icons'
 import { useRouter } from 'expo-router'
 import * as WebBrowser from 'expo-web-browser'
 import { useState } from 'react'
-import { Image, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { SvgXml } from 'react-native-svg'
 
 export default function Login() {
@@ -78,8 +79,19 @@ export default function Login() {
     }
   }
 
+  const insets = useSafeAreaInsets()
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.keyboardAvoid}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView
+        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 24), paddingBottom: insets.bottom + 24 }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <View style={styles.logoContainer}>
         <Image 
           source={require('../../assets/logo-orange.png')} 
@@ -162,15 +174,19 @@ export default function Login() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoid: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flexGrow: 1,
     padding: 24,
     backgroundColor: '#fff',
-    paddingTop: 60,
   },
   logoContainer: {
     alignItems: 'center',

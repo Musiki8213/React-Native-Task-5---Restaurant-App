@@ -6,6 +6,8 @@ import { useState } from 'react'
 import {
     ActivityIndicator,
     Image,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -13,6 +15,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function RegisterStep3() {
   const router = useRouter()
@@ -90,8 +93,19 @@ export default function RegisterStep3() {
     router.replace('/(tabs)/' as any)
   }
 
+  const insets = useSafeAreaInsets()
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.keyboardAvoid}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView
+        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 24), paddingBottom: insets.bottom + 24 }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="chevron-back" size={24} color="#000" />
       </TouchableOpacity>
@@ -165,15 +179,19 @@ export default function RegisterStep3() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoid: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flexGrow: 1,
     padding: 24,
     backgroundColor: '#fff',
-    paddingTop: 60,
   },
   backButton: {
     marginBottom: 20,

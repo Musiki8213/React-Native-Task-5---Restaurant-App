@@ -2,7 +2,8 @@ import { useRegistration } from '@/contexts/RegistrationContext'
 import { Ionicons } from '@expo/vector-icons'
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import { useEffect, useState } from 'react'
-import { Image, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function RegisterStep1() {
   const router = useRouter()
@@ -40,8 +41,8 @@ export default function RegisterStep1() {
       return
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters')
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters')
       return
     }
 
@@ -50,16 +51,26 @@ export default function RegisterStep1() {
       return
     }
 
-    const weakPasswords = ['password', '123456', 'qwerty', 'abc123']
+    const weakPasswords = ['password', '123456', 'qwerty', 'abc123', 'password1', 'admin123', 'letmein', 'welcome']
     if (weakPasswords.includes(password.toLowerCase())) {
       setError('Password is too weak. Please choose a stronger password')
       return
     }
 
-    const hasLetter = /[a-zA-Z]/.test(password)
-    const hasNumber = /[0-9]/.test(password)
-    if (!hasLetter || !hasNumber) {
-      setError('Password should contain both letters and numbers')
+    if (!/[a-z]/.test(password)) {
+      setError('Password must contain at least one lowercase letter')
+      return
+    }
+    if (!/[A-Z]/.test(password)) {
+      setError('Password must contain at least one uppercase letter')
+      return
+    }
+    if (!/[0-9]/.test(password)) {
+      setError('Password must contain at least one number')
+      return
+    }
+    if (!/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password)) {
+      setError('Password must contain at least one special character (e.g. !@#$%)')
       return
     }
 
@@ -72,8 +83,19 @@ export default function RegisterStep1() {
     router.push('/(auth)/register/step2' as any)
   }
 
+  const insets = useSafeAreaInsets()
+
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <KeyboardAvoidingView
+      style={styles.keyboardAvoid}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView
+        contentContainerStyle={[styles.container, { paddingTop: Math.max(insets.top, 24), paddingBottom: insets.bottom + 24 }]}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
       <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
         <Ionicons name="chevron-back" size={24} color="#000" />
       </TouchableOpacity>
@@ -88,6 +110,7 @@ export default function RegisterStep1() {
       <Text style={styles.title}>Register</Text>
       <Text style={styles.subtitle}>Register so you can explore our app.</Text>
 
+
       <TextInput
         placeholder="Email"
         placeholderTextColor="#999"
@@ -98,32 +121,68 @@ export default function RegisterStep1() {
         style={styles.input}
       />
 
-      <TextInput
-        placeholder="Password"
-        placeholderTextColor="#999"
-        secureTextEntry
-        value={password}
-        onChangeText={(text) => {
-          setPassword(text)
-          setError(null) // Clear error when user types
-        }}
-        style={styles.input}
-      />
-      {password.length > 0 && password.length < 6 && (
-        <Text style={styles.helperText}>Password must be at least 6 characters</Text>
+      <View style={styles.passwordContainer}>
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#999"
+          secureTextEntry={!showPassword}
+          value={password}
+          onChangeText={(text) => {
+            setPassword(text)
+            setError(null) // Clear error when user types
+          }}
+          style={styles.passwordInput}
+        />
+        <TouchableOpacity
+          onPress={() => setShowPassword(!showPassword)}
+          style={styles.eyeIcon}
+        >
+          <Ionicons
+            name={showPassword ? 'eye-outline' :  'eye-off-outline'}
+            size={20}
+            color="#666"
+          />
+        </TouchableOpacity>
+      </View>
+      {password.length > 0 && password.length < 8 && (
+        <Text style={styles.helperText}>Password must be at least 8 characters</Text>
+      )}
+      {password.length >= 8 && !/[a-z]/.test(password) && (
+        <Text style={styles.helperText}>Add a lowercase letter</Text>
+      )}
+      {password.length >= 8 && /[a-z]/.test(password) && !/[A-Z]/.test(password) && (
+        <Text style={styles.helperText}>Add an uppercase letter</Text>
+      )}
+      {password.length >= 8 && /[a-zA-Z]/.test(password) && !/[0-9]/.test(password) && (
+        <Text style={styles.helperText}>Add a number</Text>
+      )}
+      {password.length >= 8 && /[a-zA-Z0-9]/.test(password) && !/[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/.test(password) && (
+        <Text style={styles.helperText}>Add a special character (!@#$%)</Text>
       )}
 
-      <TextInput
-        placeholder="Confirm Password"
-        placeholderTextColor="#999"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={(text) => {
-          setConfirmPassword(text)
-          setError(null) // Clear error when user types
-        }}
-        style={styles.input}
-      />
+      <View style={styles.passwordContainer}>
+        <TextInput
+          placeholder="Confirm Password"
+          placeholderTextColor="#999"
+          secureTextEntry={!showConfirmPassword}
+          value={confirmPassword}
+          onChangeText={(text) => {
+            setConfirmPassword(text)
+            setError(null) // Clear error when user types
+          }}
+          style={styles.passwordInput}
+        />
+        <TouchableOpacity
+          onPress={() => setShowConfirmPassword(!showConfirmPassword)}
+          style={styles.eyeIcon}
+        >
+          <Ionicons
+            name={showPassword ? 'eye-outline' :  'eye-off-outline'}
+            size={20}
+            color="#666"
+          />
+        </TouchableOpacity>
+      </View>
       {confirmPassword.length > 0 && password !== confirmPassword && (
         <Text style={styles.helperText}>Passwords do not match</Text>
       )}
@@ -141,15 +200,19 @@ export default function RegisterStep1() {
         </TouchableOpacity>
       </View>
     </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
+  keyboardAvoid: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
   container: {
     flexGrow: 1,
     padding: 24,
     backgroundColor: '#fff',
-    paddingTop: 60,
   },
   backButton: {
     marginBottom: 20,
@@ -184,6 +247,12 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     marginBottom: 32,
+  },
+  passwordHint: {
+    fontSize: 12,
+    color: '#666',
+    marginBottom: 12,
+    marginHorizontal: 4,
   },
   input: {
     backgroundColor: '#fff',
