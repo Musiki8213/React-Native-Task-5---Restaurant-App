@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     View
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function CartScreen() {
   const router = useRouter()
@@ -33,9 +34,11 @@ export default function CartScreen() {
     router.push('/checkout' as any)
   }
 
+  const insets = useSafeAreaInsets()
+
   if (items.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
+      <View style={[styles.emptyContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.emptyText}>Your cart is empty</Text>
         <TouchableOpacity
           style={styles.shopButton}
@@ -48,7 +51,7 @@ export default function CartScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: 80 + insets.bottom }]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
           <Ionicons name="chevron-back" size={24} color="#000" />
@@ -104,7 +107,7 @@ export default function CartScreen() {
         )}
       />
 
-      <View style={styles.footer}>
+      <View style={[styles.footer, { bottom: 60 + insets.bottom }]}>
         <View style={styles.totalContainer}>
           <Text style={styles.totalLabel}>Total:</Text>
           <Text style={styles.totalPrice}>R{getTotal().toFixed(2)}</Text>
@@ -125,8 +128,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 50,
-    paddingBottom: 80, // Space for floating tab bar
   },
   emptyContainer: {
     flex: 1,

@@ -7,6 +7,8 @@ import { useEffect, useState } from 'react'
 import {
     ActivityIndicator,
     Image,
+    KeyboardAvoidingView,
+    Platform,
     ScrollView,
     StyleSheet,
     Text,
@@ -14,6 +16,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function HomeScreen() {
   const router = useRouter()
@@ -120,9 +123,21 @@ export default function HomeScreen() {
     )
   }
 
+  const insets = useSafeAreaInsets()
+
   return (
     <View style={styles.wrapper}>
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView
+        style={styles.keyboardAvoid}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+      >
+      <ScrollView
+        style={[styles.container, { paddingTop: insets.top, paddingBottom: 80 + insets.bottom }]}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {/* Header */}
         <Text style={styles.greeting}>
           {getGreeting()}{userName ? `, ${userName}` : ''}
@@ -140,10 +155,10 @@ export default function HomeScreen() {
           />
         </View>
 
-        {/* Featured section */}
+        {/* Featured Dishes section */}
         {featuredItems.length > 0 && (
           <View style={styles.featuredSection}>
-            <Text style={styles.featuredSectionTitle}>Featured</Text>
+            <Text style={styles.featuredSectionTitle}>Featured Dishes</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.featuredScroll}>
               {featuredItems.map((item) => (
                 <TouchableOpacity
@@ -184,7 +199,10 @@ export default function HomeScreen() {
           ))}
         </ScrollView>
 
-        {/* Featured Dishes */}
+        {/* Dishes list */}
+        <Text style={styles.dishesSectionTitle}>
+          {searchQuery.trim() ? 'Search results' : 'Featured Dishes'}
+        </Text>
         {itemsLoading ? (
           <View style={styles.loadingContainer}>
             <ActivityIndicator size="large" color="#FF6B2C" />
@@ -220,6 +238,7 @@ export default function HomeScreen() {
           ))
         )}
       </ScrollView>
+      </KeyboardAvoidingView>
       <TabBar />
     </View>
   )
@@ -230,12 +249,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  keyboardAvoid: {
+    flex: 1,
+  },
   container: {
     flex: 1,
     backgroundColor: '#fff',
     padding: 16,
-    paddingTop: 50,
-    paddingBottom: 80, // Space for floating tab bar
+  },
+  scrollContent: {
+    paddingBottom: 24,
   },
   greeting: {
     fontSize: 24,
@@ -263,6 +286,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   featuredSectionTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 12,
+  },
+  dishesSectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
     color: '#000',

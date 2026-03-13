@@ -3,6 +3,7 @@ import { supabase } from '@/lib/supabase'
 import { useFocusEffect, useRouter } from 'expo-router'
 import { useCallback, useEffect, useState } from 'react'
 import { FlatList, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 export default function OrdersScreen() {
   const router = useRouter()
@@ -71,9 +72,11 @@ export default function OrdersScreen() {
     }
   }
 
+  const insets = useSafeAreaInsets()
+
   if (loading) {
     return (
-      <View style={styles.container}>
+      <View style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text>Loading...</Text>
       </View>
     )
@@ -81,7 +84,7 @@ export default function OrdersScreen() {
 
   if (orders.length === 0) {
     return (
-      <View style={styles.emptyContainer}>
+      <View style={[styles.emptyContainer, { paddingTop: insets.top, paddingBottom: insets.bottom }]}>
         <Text style={styles.emptyText}>No orders yet</Text>
         <TouchableOpacity
           style={styles.shopButton}
@@ -94,7 +97,7 @@ export default function OrdersScreen() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top, paddingBottom: 80 + insets.bottom }]}>
       <View style={styles.header}>
         <Text style={styles.title}>Orders</Text>
       </View>
@@ -143,8 +146,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 50,
-    paddingBottom: 80, // Space for floating tab bar
   },
   emptyContainer: {
     flex: 1,

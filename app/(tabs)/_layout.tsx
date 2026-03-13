@@ -1,6 +1,7 @@
 import { Tabs } from 'expo-router'
 import { Ionicons } from '@expo/vector-icons'
 import { View, Text, StyleSheet } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useCart } from '@/contexts/CartContext'
 
 function CartIconWithBadge({ color, size }: { color: string; size: number }) {
@@ -20,6 +21,7 @@ function CartIconWithBadge({ color, size }: { color: string; size: number }) {
 }
 
 export default function TabsLayout() {
+  const insets = useSafeAreaInsets()
   return (
     <Tabs
       screenOptions={{
@@ -35,8 +37,8 @@ export default function TabsLayout() {
           backgroundColor: '#fff',
           borderTopWidth: 1,
           borderTopColor: '#eee',
-          height: 60,
-          paddingBottom: 8,
+          height: 60 + insets.bottom,
+          paddingBottom: insets.bottom + 8,
           paddingTop: 8,
         },
       }}
