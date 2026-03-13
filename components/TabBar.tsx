@@ -1,11 +1,13 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native'
 import { useRouter, usePathname } from 'expo-router'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { Ionicons } from '@expo/vector-icons'
 import { useCart } from '@/contexts/CartContext'
 
 export default function TabBar() {
   const router = useRouter()
   const pathname = usePathname()
+  const insets = useSafeAreaInsets()
   const { getItemCount } = useCart()
   const itemCount = getItemCount()
 
@@ -41,7 +43,7 @@ export default function TabBar() {
   }
 
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingBottom: 8 + insets.bottom, height: 60 + insets.bottom }]}>
       {tabs.map((tab) => (
         <TouchableOpacity
           key={tab.name}
