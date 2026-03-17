@@ -119,7 +119,7 @@ npm run dev
 Then open the URL shown in the terminal (e.g. `http://localhost:5173`).
 
 ### CMS admin login
-admin login for restaurant app
+Admin login for restaurant app
 
 | Field    | Value                        |
 |---------|------------------------------|
