@@ -121,7 +121,7 @@
 .status-preparing { background: #dbeafe; color: #1e40af; }
 .status-ready { background: #d1fae5; color: #065f46; }
 .status-delivered { background: #d1fae5; color: #065f46; }
-.status-cancelled { background: #fee2e2; color: #991b1b; }
+.status-cancelled { background: #374151; color: #ffffff; }
 
 .status-select {
   padding: 6px 10px;
@@ -141,4 +141,22 @@
 .status-select:disabled {
   opacity: 0.7;
   cursor: not-allowed;
+}
+
+.status-select-cancelled {
+  background: #374151;
+  color: #ffffff;
+  border-color: #374151;
+}
+
+.status-select-cancelled:hover,
+.status-select-cancelled:focus {
+  background: #374151;
+  color: #ffffff;
+  border-color: #374151;
+}
+
+.status-select option[value="cancelled"] {
+  background: #374151;
+  color: #ffffff;
 }

@@ -30,6 +30,7 @@ interface ProfileMap {
 }
 
 const STATUS_OPTIONS: OrderStatus[] = ['pending', 'preparing', 'ready', 'delivered', 'cancelled']
+const STATUS_FLOW: OrderStatus[] = ['pending', 'preparing', 'ready', 'delivered']
 
 export default function Orders() {
   const navigate = useNavigate()
@@ -79,6 +80,11 @@ export default function Orders() {
   }, [loadOrders])
 
   const handleStatusChange = async (orderId: string, newStatus: OrderStatus) => {
+    if (newStatus === 'cancelled') {
+      const confirmed = window.confirm('Are you sure you want to cancel this order?')
+      if (!confirmed) return
+    }
+
     try {
       setUpdatingId(orderId)
       const { error: updateError } = await supabase
@@ -94,6 +100,20 @@ export default function Orders() {
     }
   }
 
+  const getAllowedStatuses = (currentStatus: OrderStatus): OrderStatus[] => {
+    if (currentStatus === 'delivered' || currentStatus === 'cancelled') {
+      return [currentStatus]
+    }
+
+    const currentIndex = STATUS_FLOW.indexOf(currentStatus)
+    if (currentIndex === -1) {
+      return STATUS_OPTIONS
+    }
+
+    const nextStatus = STATUS_FLOW[currentIndex + 1]
+    return nextStatus ? [currentStatus, nextStatus, 'cancelled'] : [currentStatus, 'cancelled']
+  }
+
   const formatDate = (dateStr: string) => {
     const d = new Date(dateStr)
     return d.toLocaleDateString() + ' ' + d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -101,6 +121,7 @@ export default function Orders() {
 
   const getStatusLabel = (status: OrderStatus) => {
     if (status === 'delivered') return 'Completed'
+    if (status === 'cancelled') return 'Cancel'
     return status.charAt(0).toUpperCase() + status.slice(1)
   }
 
@@ -142,7 +163,10 @@ export default function Orders() {
                 </tr>
               </thead>
               <tbody>
-                {orders.map((order) => (
+                {orders.map((order) => {
+                  const allowedStatuses = getAllowedStatuses(order.status)
+
+                  return (
                   <tr key={order.id}>
                     <td className="order-id">#{order.id.slice(0, 8)}</td>
                     <td>{profileMap[order.user_id]?.name ?? '—'}</td>
@@ -155,12 +179,12 @@ export default function Orders() {
                     <td className="date-cell">{formatDate(order.created_at)}</td>
                     <td>
                       <select
-                        className="status-select"
+                        className={`status-select ${order.status === 'cancelled' ? 'status-select-cancelled' : ''}`}
                         value={order.status}
-                        disabled={updatingId === order.id}
+                        disabled={updatingId === order.id || allowedStatuses.length <= 1}
                         onChange={(e) => handleStatusChange(order.id, e.target.value as OrderStatus)}
                       >
-                        {STATUS_OPTIONS.map((s) => (
+                        {allowedStatuses.map((s) => (
                           <option key={s} value={s}>
                             {getStatusLabel(s)}
                           </option>
@@ -168,7 +192,8 @@ export default function Orders() {
                       </select>
                     </td>
                   </tr>
-                ))}
+                  )
+                })}
               </tbody>
             </table>
           </div>
